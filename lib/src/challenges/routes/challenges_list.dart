@@ -17,33 +17,36 @@ class ChallengesList extends StatelessWidget {
           ),
           SliverList.list(
             children: const [
-			  ChallengeTile(name: 'Match Color'),
-			  ChallengeTile(name: 'Match Hue',
-			    tileColorEffect: AddHSL(
-				  deltaSaturation: 0.1,
-				  deltaLightness: -0.1,
-				),
-			    rightColorEffect: AddHSL(
-				  deltaSaturation: -0.1,
-				  deltaLightness: 0.1,
-				),
-			  ),
-			  ChallengeTile(name: 'Match Brightness',
-			    tileColorEffect: AddHSL(
-				  deltaHue: 80,
-				  deltaSaturation: -0.3,
-				),
-			    rightColorEffect: AddHSL(
-				  deltaLightness: -0.3,
-				),
-			  ),
-			  ChallengeTile(name: 'Complimentary',
-			    tileColorEffect: AddHSL(
-				  deltaHue: 180,
-				),
-			  ),
-			  ChallengeTile(name: 'Color Wheel'),
-			  ChallengeTile(name: 'Vocabulary'),
+              ChallengeTile(name: 'Match Color'),
+              ChallengeTile(
+                name: 'Match Hue',
+                tileColorEffect: AddHSL(
+                  deltaSaturation: 0.1,
+                  deltaLightness: -0.1,
+                ),
+                rightColorEffect: AddHSL(
+                  deltaSaturation: -0.1,
+                  deltaLightness: 0.1,
+                ),
+              ),
+              ChallengeTile(
+                name: 'Match Brightness',
+                tileColorEffect: AddHSL(
+                  deltaHue: 80,
+                  deltaSaturation: -0.3,
+                ),
+                rightColorEffect: AddHSL(
+                  deltaLightness: -0.3,
+                ),
+              ),
+              ChallengeTile(
+                name: 'Complimentary',
+                tileColorEffect: AddHSL(
+                  deltaHue: 180,
+                ),
+              ),
+              ChallengeTile(name: 'Color Wheel'),
+              ChallengeTile(name: 'Vocabulary'),
             ],
           ),
         ],

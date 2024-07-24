@@ -17,13 +17,13 @@ class ChallengeTile extends StatelessWidget {
   final ColorEffect rightColorEffect;
 
   Widget background(Color colorLeft, Color colorRight) {
-	return HeroBackgroundGradient(
+    return HeroBackgroundGradient(
       tag: name == 'Match Color' ? 'gradient' : name,
-	  colorLeft: colorLeft,
-	  colorRight: colorRight,
-	  borderRadius: 42,
-	  rightColorEffect: rightColorEffect,
-	);
+      colorLeft: colorLeft,
+      colorRight: colorRight,
+      borderRadius: 42,
+      rightColorEffect: rightColorEffect,
+    );
   }
 
   @override
@@ -47,7 +47,11 @@ class ChallengeTile extends StatelessWidget {
                         PageRouteBuilder(
                           transitionDuration: const Duration(seconds: 1),
                           reverseTransitionDuration: const Duration(seconds: 1),
-                          pageBuilder: (_, __, ___) => Play(),
+                          pageBuilder: (_, __, ___) => Play(
+                            colorLeft: colorLeft,
+                            colorRight: colorRight,
+							isWheel: name == 'Color Wheel',
+                          ),
                         ));
                   },
                   child: Row(
