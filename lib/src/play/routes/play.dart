@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 
 class Play extends StatelessWidget {
   const Play({
+    required this.challengeId,
     required this.colorLeft,
     required this.colorRight,
     this.isWheel = false,
     super.key,
   });
 
+  final String challengeId;
   final bool isWheel;
   final Color colorLeft;
   final Color colorRight;
@@ -41,7 +43,7 @@ class Play extends StatelessWidget {
                       minHeight: 100,
                       maxHeight: 100,
                       child: Hero(
-                        tag: 'findme',
+                        tag: 'findme$challengeId',
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(42),
@@ -70,7 +72,7 @@ class Play extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: 'gradient',
+                    tag: 'gradient$challengeId',
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: const BorderRadius.only(

@@ -15,7 +15,7 @@ class FadeIn extends StatefulWidget {
 }
 
 class _FadeInState extends State<FadeIn> {
-  double opacity = 0.0;
+  bool showing = false;
 
   @override
   void initState() {
@@ -23,16 +23,24 @@ class _FadeInState extends State<FadeIn> {
 
     Future.delayed(widget.delay).then((_) {
       setState(() {
-        opacity = 1.0;
+        showing = true;
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final route = ModalRoute.of(context);
+    route!.animation?.addListener(() {
+      if (route.animation!.isCompleted != showing) {
+        setState(() {
+          showing = !showing;
+        });
+      }
+    });
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 800),
-      opacity: opacity,
+      opacity: showing ? 1.0 : 0.0,
       child: widget.child,
     );
   }

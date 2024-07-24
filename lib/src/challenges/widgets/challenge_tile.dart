@@ -7,18 +7,20 @@ import 'package:artists_eye/src/util/widgets/changing_color.dart';
 class ChallengeTile extends StatelessWidget {
   const ChallengeTile({
     required this.name,
+    required this.id,
     this.tileColorEffect = ColorEffect.none,
     this.rightColorEffect = ColorEffect.none,
     super.key,
   });
 
   final String name;
+  final String id;
   final ColorEffect tileColorEffect;
   final ColorEffect rightColorEffect;
 
   Widget background(Color colorLeft, Color colorRight) {
     return HeroBackgroundGradient(
-      tag: name == 'Match Color' ? 'gradient' : name,
+      tag: 'gradient$id',
       colorLeft: colorLeft,
       colorRight: colorRight,
       borderRadius: 42,
@@ -48,9 +50,10 @@ class ChallengeTile extends StatelessWidget {
                           transitionDuration: const Duration(seconds: 1),
                           reverseTransitionDuration: const Duration(seconds: 1),
                           pageBuilder: (_, __, ___) => Play(
+                            challengeId: id,
                             colorLeft: colorLeft,
                             colorRight: colorRight,
-							isWheel: name == 'Color Wheel',
+                            isWheel: name == 'Color Wheel',
                           ),
                         ));
                   },
@@ -59,7 +62,7 @@ class ChallengeTile extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(24),
                         child: Hero(
-                          tag: name == 'Match Color' ? 'findme' : 'f$name',
+                          tag: 'findme$id',
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(26),
