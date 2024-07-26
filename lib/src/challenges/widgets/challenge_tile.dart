@@ -49,6 +49,8 @@ class ChallengeTile extends StatelessWidget {
                         PageRouteBuilder(
                           transitionDuration: const Duration(seconds: 1),
                           reverseTransitionDuration: const Duration(seconds: 1),
+                          transitionsBuilder: (_, a, __, child) =>
+                              FadeTransition(opacity: a, child: child),
                           pageBuilder: (_, __, ___) => Play(
                             challengeId: id,
                             colorLeft: colorLeft,

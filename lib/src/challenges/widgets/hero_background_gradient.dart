@@ -45,6 +45,8 @@ class HeroBackgroundGradient extends StatelessWidget {
           bottomLeft: blendedCorner,
         ),
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [colorLeft, rightColorEffect.perform(colorRight)],
         ),
         boxShadow: [
