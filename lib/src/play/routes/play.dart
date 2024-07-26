@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
+import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
+import 'package:artists_eye/src/scaffold/widgets/primary_area_gradient.dart';
+import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
 import 'package:artists_eye/src/util/widgets/fade_in.dart';
 import 'package:flutter/material.dart';
 
@@ -64,10 +67,12 @@ class _PlayState extends State<Play> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Artist's Eye"),
-      ),
+    return ArtistsEyeScaffold(
+	  thumb: ThumbWidget(
+		text: 'Find me!',
+		heroTag: 'findme${widget.challengeId}',
+		color: Color.lerp(colorLeft, colorRight, answer)!,
+	  ),
       body: GestureDetector(
         onTap: () {
           if (picked != null) {
@@ -80,93 +85,34 @@ class _PlayState extends State<Play> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           verticalDirection: VerticalDirection.up,
           children: [
-            Row(
-              children: [
-                const SizedBox(width: 16),
                 Text('Match the color:\n ($correct / $tests)',
                     style: Theme.of(context).textTheme.titleLarge),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      width: 70,
-                      height: 100,
-                      child: OverflowBox(
-                        minWidth: 200,
-                        maxWidth: 200,
-                        minHeight: 100,
-                        maxHeight: 100,
-                        child: Hero(
-                          tag: 'findme${widget.challengeId}',
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(400),
-                              color: Color.lerp(colorLeft, colorRight, answer),
-                            ),
-                            child: SizedBox(
-                              height: 100,
-                              width: 200,
-                              child: Center(
-                                child: Text('Find me!',
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 12),
             Expanded(
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
                   Positioned.fill(
-                    child: Hero(
-                      tag: 'gradient${widget.challengeId}',
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(42.0)),
-                          gradient: LinearGradient(
-                            begin: widget.isWheel
-                                ? Alignment.topCenter
-                                : Alignment.topLeft,
-                            end: widget.isWheel
-                                ? Alignment.bottomCenter
-                                : Alignment.bottomRight,
-                            colors: [
-                              if (!widget.isWheel) ...[
-                                colorLeft,
-                                colorRight,
-                              ] else ...[
-                                Colors.grey[200]!,
-                                Colors.grey[100]!,
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    child: PrimaryAreaGradient(
+					  heroTag: 'gradient${widget.challengeId}',
+					  colorLeft: colorLeft,
+					  colorRight: colorRight,
+					),
                   ),
                   Positioned.fill(
                     child: PickFromGradient(
-                        colorLeft: colorLeft,
-                        colorRight: colorRight,
-                        solution: 0.8,
-                        onSelect: (value) {
-                          setState(() {
-                            picked = value;
-                            tests++;
-                            if (getScore() > 0.9) {
-                              correct++;
-                            }
-                          });
-                        }),
+                      colorLeft: colorLeft,
+                      colorRight: colorRight,
+                      onSelect: (value) {
+                        setState(() {
+                          picked = value;
+                          tests++;
+                          if (getScore() > 0.9) {
+                            correct++;
+                          }
+                        });
+                      },
+                    ),
                   ),
                   if (widget.isWheel)
                     const Positioned.fill(

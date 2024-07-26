@@ -1,3 +1,4 @@
+import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
 import 'package:flutter/material.dart';
 
 const defaultPrimaryAreaGradientRadius = 32.0;
@@ -32,6 +33,12 @@ class PrimaryAreaGradient extends StatelessWidget {
         colorLeft: colorLeft,
         colorRight: colorRight,
         radius: radius,
+		child: PickFromGradient(
+		  colorLeft: colorLeft,
+		  colorRight: colorRight,
+		  onSelect: (v) {
+		  }
+		),
       ),
     );
   }
@@ -43,6 +50,7 @@ class PrimaryAreaGradientBase extends StatelessWidget {
     required this.colorRight,
     required this.radius,
     this.animation,
+	this.child,
     super.key,
   });
 
@@ -50,6 +58,7 @@ class PrimaryAreaGradientBase extends StatelessWidget {
   final Color colorLeft;
   final Color colorRight;
   final double radius;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +75,7 @@ class PrimaryAreaGradientBase extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
         ),
+		child: child,
       ),
     );
   }

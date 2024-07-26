@@ -1,4 +1,5 @@
 import 'package:artists_eye/src/challenges/routes/challenges_list.dart';
+import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const ChallengesList(),
+      //home: ExamplePage(),
     );
   }
 }

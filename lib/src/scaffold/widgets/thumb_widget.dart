@@ -6,6 +6,7 @@ class ThumbWidget extends StatelessWidget {
     required this.text,
     this.height = 100,
     this.width = 110,
+	this.heroTag = 'thumb',
     super.key,
   });
 
@@ -13,10 +14,13 @@ class ThumbWidget extends StatelessWidget {
   final double width;
   final Color color;
   final String text;
+  final String heroTag;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Hero(
+	  tag: heroTag,
+	child: DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(height),
@@ -41,6 +45,7 @@ class ThumbWidget extends StatelessWidget {
           ),
         ),
       ),
+	  ),
     );
   }
 }

@@ -6,7 +6,6 @@ class PickFromGradient extends StatefulWidget {
   const PickFromGradient({
     required this.colorLeft,
     required this.colorRight,
-    required this.solution,
     required this.onSelect,
     this.pickerSize = 64,
     super.key,
@@ -15,7 +14,6 @@ class PickFromGradient extends StatefulWidget {
   final void Function(double) onSelect;
   final Color colorLeft;
   final Color colorRight;
-  final double solution;
   final double pickerSize;
 
   @override
@@ -53,7 +51,7 @@ class _PickFromGradientState extends State<PickFromGradient> {
       onPanEnd: (details) {
         pickOffset(context, details.localPosition);
       },
-	  behavior: HitTestBehavior.translucent,
+      behavior: HitTestBehavior.translucent,
       child: Stack(
         children: [
           Positioned.fill(
