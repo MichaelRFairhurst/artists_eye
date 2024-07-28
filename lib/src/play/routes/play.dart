@@ -8,6 +8,7 @@ import 'package:artists_eye/src/scaffold/widgets/primary_area_gradient.dart';
 import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
 import 'package:artists_eye/src/util/widgets/fade_in.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_color_models/flutter_color_models.dart';
 
 class Play extends StatefulWidget {
   const Play({
@@ -74,59 +75,50 @@ class _PlayState extends State<Play> {
         heroTag: 'findme${widget.challengeId}',
         color: Color.lerp(colorLeft, colorRight, answer)!,
       ),
-      body: GestureDetector(
-        onTap: () {
-          if (picked != null) {
-            setState(() {
-              newPuzzle();
-            });
-          }
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          verticalDirection: VerticalDirection.up,
-          children: [
-            Text('Match the color:\n ($correct / $tests)',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Expanded(
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  Positioned.fill(
-                    child: PrimaryAreaGradient(
-                      heroTag: 'gradient${widget.challengeId}',
-                      colorLeft: colorLeft,
-                      colorRight: colorRight,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        verticalDirection: VerticalDirection.up,
+        children: [
+          Text('Match the color:\n ($correct / $tests)',
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                Positioned.fill(
+                  child: PrimaryAreaGradient(
+                    heroTag: 'gradient${widget.challengeId}',
+                    colorLeft: colorLeft,
+                    colorRight: colorRight,
+                  ),
+                ),
+                Positioned.fill(
+                  child: PickFromGradient(
+                    colorLeft: colorLeft,
+                    colorRight: colorRight,
+                    onSelect: (value) {
+                      setState(() {
+                        picked = value;
+                        tests++;
+                        if (getScore() > 0.9) {
+                          correct++;
+                        }
+                      });
+                      showComparisonModal();
+                    },
+                  ),
+                ),
+                if (widget.isWheel)
+                  const Positioned.fill(
+                    child: FadeIn(
+                      child: ColorWheel(),
                     ),
                   ),
-                  Positioned.fill(
-                    child: PickFromGradient(
-                      colorLeft: colorLeft,
-                      colorRight: colorRight,
-                      onSelect: (value) {
-                        setState(() {
-                          picked = value;
-                          tests++;
-                          if (getScore() > 0.9) {
-                            correct++;
-                          }
-                        });
-                        showComparisonModal();
-                      },
-                    ),
-                  ),
-                  if (widget.isWheel)
-                    const Positioned.fill(
-                      child: FadeIn(
-                        child: ColorWheel(),
-                      ),
-                    ),
-                ],
-              ),
+              ],
             ),
-          ].reversed.toList(),
-        ),
+          ),
+        ].reversed.toList(),
       ),
     );
   }
@@ -136,16 +128,16 @@ class _PlayState extends State<Play> {
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.grey[400]!.withOpacity(0.1),
-		transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 400),
         pageBuilder: (_, animation, ___) {
           return FadeTransition(
             opacity: animation,
             child: ColorComparison(
-			  pickedColor: Color.lerp(colorLeft, colorRight, picked!)!,
-			  correctColor: Color.lerp(colorLeft, colorRight, answer)!,
-			  match: getScore(),
-			  challengeId: widget.challengeId,
-			),
+              pickedColor: Color.lerp(colorLeft, colorRight, picked!)!,
+              correctColor: Color.lerp(colorLeft, colorRight, answer)!,
+              match: getScore(),
+              challengeId: widget.challengeId,
+            ),
           );
         },
       ),
@@ -156,37 +148,21 @@ class _PlayState extends State<Play> {
     });
   }
 
-  double colorDistance(Color a, Color b) {
-    const gamma = 2.2;
-    num gammaCorrect(int a) => a; // pow(a / 255, 1 / gamma);
+  double labColorDistance(Color a, Color b) {
+    final labA = LabColor.fromColor(a);
+    final labB = LabColor.fromColor(b);
 
-    num componentDist(int a, int b) {
-      return pow(gammaCorrect(a) - gammaCorrect(b), 2);
-    }
+    final adist = labA.a - labB.a;
+    final bdist = labA.b - labB.b;
+    final ldist = labA.lightness - labB.lightness;
 
-    final rmean = (gammaCorrect(a.red) + gammaCorrect(b.red)) / 2;
-    final red = componentDist(a.red, b.red);
-    final green = componentDist(a.green, b.green);
-    final blue = componentDist(a.blue, b.blue);
-
-    return sqrt((((512 + rmean) * red * red) / 256) +
-        4 * green * green +
-        (((767 - rmean) * blue * blue) / 256));
-    //num cubeRoot(num a) => pow(a, 1 / 3);
-
-    //return 1 -
-    //    cubeRoot(componentDist(a.red, b.red) +
-    //            componentDist(a.green, b.green) +
-    //            componentDist(a.blue, b.blue)) /
-    //        (cubeRoot(componentDist(0, 255) * 3));
+    return sqrt(adist * adist + bdist * bdist + ldist * ldist);
   }
 
   double getScore() {
     final correctColor = Color.lerp(colorLeft, colorRight, answer)!;
     final pickedColor = Color.lerp(colorLeft, colorRight, picked!)!;
 
-    return (1 - colorDistance(correctColor, pickedColor) / 3000)
-        .clamp(0.0, 1.0);
+	return (1 - labColorDistance(correctColor, pickedColor) / 80).clamp(0, 1);
   }
-
 }
