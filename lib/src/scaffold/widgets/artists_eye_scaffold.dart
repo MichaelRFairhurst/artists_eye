@@ -25,6 +25,7 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
+	    verticalDirection: VerticalDirection.up,
         children: [
           SafeArea(
             child: Padding(
@@ -56,7 +57,7 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
               ],
             ),
           ),
-        ],
+        ].reversed.toList(),
       ),
     );
   }

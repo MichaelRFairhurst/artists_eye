@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
+import 'package:artists_eye/src/play/widgets/color_comparison.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
 import 'package:artists_eye/src/scaffold/widgets/primary_area_gradient.dart';
@@ -68,11 +69,11 @@ class _PlayState extends State<Play> {
   @override
   Widget build(BuildContext context) {
     return ArtistsEyeScaffold(
-	  thumb: ThumbWidget(
-		text: 'Find me!',
-		heroTag: 'findme${widget.challengeId}',
-		color: Color.lerp(colorLeft, colorRight, answer)!,
-	  ),
+      thumb: ThumbWidget(
+        text: 'Find me!',
+        heroTag: 'findme${widget.challengeId}',
+        color: Color.lerp(colorLeft, colorRight, answer)!,
+      ),
       body: GestureDetector(
         onTap: () {
           if (picked != null) {
@@ -85,8 +86,8 @@ class _PlayState extends State<Play> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           verticalDirection: VerticalDirection.up,
           children: [
-                Text('Match the color:\n ($correct / $tests)',
-                    style: Theme.of(context).textTheme.titleLarge),
+            Text('Match the color:\n ($correct / $tests)',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             Expanded(
               child: Stack(
@@ -94,10 +95,10 @@ class _PlayState extends State<Play> {
                 children: [
                   Positioned.fill(
                     child: PrimaryAreaGradient(
-					  heroTag: 'gradient${widget.challengeId}',
-					  colorLeft: colorLeft,
-					  colorRight: colorRight,
-					),
+                      heroTag: 'gradient${widget.challengeId}',
+                      colorLeft: colorLeft,
+                      colorRight: colorRight,
+                    ),
                   ),
                   Positioned.fill(
                     child: PickFromGradient(
@@ -111,6 +112,7 @@ class _PlayState extends State<Play> {
                             correct++;
                           }
                         });
+                        showComparisonModal();
                       },
                     ),
                   ),
@@ -120,25 +122,6 @@ class _PlayState extends State<Play> {
                         child: ColorWheel(),
                       ),
                     ),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    reverseDuration: const Duration(milliseconds: 250),
-                    child: picked == null
-                        ? const SizedBox.expand()
-                        : colorComparison(),
-                  ),
-                  if (picked != null) ...[
-                    Positioned.fill(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            newPuzzle();
-                          });
-                        },
-                        behavior: HitTestBehavior.opaque,
-                      ),
-                    )
-                  ],
                 ],
               ),
             ),
@@ -148,93 +131,30 @@ class _PlayState extends State<Play> {
     );
   }
 
-  Widget targetColorBubble(bool withShadow) {
-    return Positioned(
-      right: 30,
-      bottom: 30,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(300),
-          color: Color.lerp(colorLeft, colorRight, answer),
-          boxShadow: [
-            if (withShadow)
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 3,
-              ),
-          ],
-        ),
-        child: const SizedBox(
-          height: 100,
-          width: 100,
-        ),
+  void showComparisonModal() async {
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.grey[400]!.withOpacity(0.1),
+		transitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (_, animation, ___) {
+          return FadeTransition(
+            opacity: animation,
+            child: ColorComparison(
+			  pickedColor: Color.lerp(colorLeft, colorRight, picked!)!,
+			  correctColor: Color.lerp(colorLeft, colorRight, answer)!,
+			  match: getScore(),
+			  challengeId: widget.challengeId,
+			),
+          );
+        },
       ),
     );
-  }
 
-  Widget colorComparison() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Stack(
-        children: [
-          targetColorBubble(true),
-          Padding(
-            padding: const EdgeInsets.all(48),
-            child: scoreBubble(),
-          ),
-          targetColorBubble(false),
-        ],
-      ),
-    );
+    setState(() {
+      newPuzzle();
+    });
   }
-
-  Widget scoreBubble() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(1000),
-          color: Color.lerp(
-            colorLeft,
-            colorRight,
-            picked!,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 5,
-              offset: const Offset(0, 0),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 5000,
-              spreadRadius: 20,
-              offset: const Offset(0, 120),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(scoreText(),
-                style: Theme.of(context)
-                    .textTheme
-                    .displayLarge!
-                    .copyWith(color: Colors.white)),
-            const SizedBox(height: 16),
-            Text(getScoreString(),
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall!
-                    .copyWith(color: Colors.white)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String getScoreString() => '${(getScore() * 100).floor()}% match';
 
   double colorDistance(Color a, Color b) {
     const gamma = 2.2;
@@ -269,20 +189,4 @@ class _PlayState extends State<Play> {
         .clamp(0.0, 1.0);
   }
 
-  String scoreText() {
-    final score = getScore();
-    if (score == 1.0) {
-      return 'Perfect!';
-    } else if (score >= 0.97) {
-      return 'Excellent!';
-    } else if (score > 0.90) {
-      return 'Great!';
-    } else if (score > 0.8) {
-      return 'Almost!';
-    } else if (score > 0.5) {
-      return 'Not quite!';
-    } else {
-      return 'Try again!';
-    }
-  }
 }

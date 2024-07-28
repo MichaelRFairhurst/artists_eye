@@ -41,7 +41,7 @@ class GradientToPrimaryArea extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(radius),
                   ),
                 ),
               ),

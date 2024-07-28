@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
+const defaultThumbHeight = 100.0;
+const defaultThumbWidth = 110.0;
+
 class ThumbWidget extends StatelessWidget {
   const ThumbWidget({
     required this.color,
     required this.text,
-    this.height = 100,
-    this.width = 110,
+    this.height = defaultThumbHeight,
+    this.width = defaultThumbWidth,
 	this.heroTag = 'thumb',
     super.key,
   });
