@@ -11,6 +11,7 @@ class ArtistsEyeScaffold extends StatefulWidget {
     this.primaryAreaGradient,
     this.background,
     this.titleColor,
+    this.scrollable = false,
     super.key,
   });
 
@@ -19,6 +20,7 @@ class ArtistsEyeScaffold extends StatefulWidget {
   final Widget? primaryAreaGradient;
   final Widget? background;
   final Widget body;
+  final bool scrollable;
 
   @override
   ArtistsEyeScaffoldState createState() => ArtistsEyeScaffoldState();
@@ -34,44 +36,70 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
               const Positioned.fill(
                 child: ChangingBackgroundGradient(),
               ),
-          Column(
-            verticalDirection: VerticalDirection.up,
-            children: [
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 24),
-                      Text(
-                        "Artist's Eye",
-                        style: Theme.of(context)
-                            .appBarTheme
-                            .titleTextStyle!
-                            .copyWith(color: widget.titleColor),
-                      ),
-                      const Spacer(),
-                      if (widget.thumb != null) widget.thumb!,
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    if (widget.primaryAreaGradient != null)
-                      Positioned.fill(
-                        child: widget.primaryAreaGradient!,
-                      ),
-                    Positioned.fill(
-                      child: widget.body,
-                    ),
-                  ],
-                ),
-              ),
-            ].reversed.toList(),
+		  Positioned.fill(
+			child: getOverBackground(),
+		  ),
+        ],
+      ),
+    );
+  }
+
+  Widget getOverBackground() {
+    final bodyStack = Stack(
+      children: [
+        if (widget.primaryAreaGradient != null)
+          Positioned.fill(
+            child: widget.primaryAreaGradient!,
+          ),
+        Positioned.fill(
+          child: widget.body,
+        ),
+      ],
+    );
+
+    if (!widget.scrollable) {
+      return Column(
+        verticalDirection: VerticalDirection.up,
+        children: [
+          appBar(),
+          Expanded(
+            child: bodyStack,
+          ),
+        ].reversed.toList(),
+      );
+    } else {
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: appBar(),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: widget.body,
           ),
         ],
+      );
+    }
+  }
+
+  Widget appBar() {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          children: [
+            const SizedBox(width: 24),
+            Text(
+              "Artist's Eye",
+              style: Theme.of(context)
+                  .appBarTheme
+                  .titleTextStyle!
+                  .copyWith(color: widget.titleColor),
+            ),
+            const Spacer(),
+            if (widget.thumb != null) widget.thumb!,
+          ],
+        ),
       ),
     );
   }
