@@ -39,7 +39,7 @@ class ColorComparison extends StatelessWidget {
             ),
           ),
 		  Positioned(
-			bottom: 48,
+			bottom: 140,
 			left: 0,
 			right: 0,
 			child: Text(

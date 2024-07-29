@@ -9,11 +9,13 @@ class ArtistsEyeScaffold extends StatefulWidget {
     required this.body,
     this.thumb,
     this.primaryAreaGradient,
+    this.background,
     super.key,
   });
 
   final Widget? thumb;
   final Widget? primaryAreaGradient;
+  final Widget? background;
   final Widget body;
 
   @override
@@ -24,40 +26,45 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-	    verticalDirection: VerticalDirection.up,
+      body: Stack(
         children: [
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  const SizedBox(width: 24),
-                  Text("Artist's Eye",
-                      style: Theme.of(context).appBarTheme.titleTextStyle),
-                  const Spacer(),
-                  if (widget.thumb != null) widget.thumb!,
-                ],
+          widget.background ??
+              const Positioned.fill(
+                child: ChangingBackgroundGradient(),
               ),
-            ),
-          ),
-          Expanded(
-            child: Stack(
-              children: [
-                const Positioned.fill(
-                  child: ChangingBackgroundGradient(),
-                ),
-                if (widget.primaryAreaGradient != null)
-                  Positioned.fill(
-                    child: widget.primaryAreaGradient!,
+          Column(
+            verticalDirection: VerticalDirection.up,
+            children: [
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 24),
+                      Text("Artist's Eye",
+                          style: Theme.of(context).appBarTheme.titleTextStyle),
+                      const Spacer(),
+                      if (widget.thumb != null) widget.thumb!,
+                    ],
                   ),
-                Positioned.fill(
-                  child: widget.body,
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    if (widget.primaryAreaGradient != null)
+                      Positioned.fill(
+                        child: widget.primaryAreaGradient!,
+                      ),
+                    Positioned.fill(
+                      child: widget.body,
+                    ),
+                  ],
+                ),
+              ),
+            ].reversed.toList(),
           ),
-        ].reversed.toList(),
+        ],
       ),
     );
   }

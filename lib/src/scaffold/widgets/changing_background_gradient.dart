@@ -5,19 +5,21 @@ class ChangingBackgroundGradient extends StatelessWidget {
   const ChangingBackgroundGradient({super.key});
   @override
   Widget build(BuildContext context) {
-    return ChangingColor.valueBuilder(
-      builder: (context, value, _) {
+    return ChangingColors(
+      builder: (context, colorLeft, colorRight, _) {
         return DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.transparent,
-                value.withOpacity(0.25),
+                Colors.grey[100]!,
+                colorRight.withOpacity(0.1),
+                colorRight.withOpacity(0.25),
               ],
               stops: const [
-                0.2,
+                0.0,
+                0.4,
                 1.0,
               ],
             ),
@@ -27,4 +29,3 @@ class ChangingBackgroundGradient extends StatelessWidget {
     );
   }
 }
-

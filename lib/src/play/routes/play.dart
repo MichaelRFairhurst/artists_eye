@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
+import 'package:artists_eye/src/play/routes/final_score.dart';
 import 'package:artists_eye/src/play/widgets/color_comparison.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
+import 'package:artists_eye/src/play/widgets/timer.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
 import 'package:artists_eye/src/scaffold/widgets/primary_area_gradient.dart';
 import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
@@ -79,7 +81,7 @@ class _PlayState extends State<Play> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         verticalDirection: VerticalDirection.up,
         children: [
-          Text('Match the color:\n ($correct / $tests)',
+          Text('Match the color:\n ($correct / 20)',
               style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           Expanded(
@@ -115,10 +117,42 @@ class _PlayState extends State<Play> {
                       child: ColorWheel(),
                     ),
                   ),
+                Positioned(
+                  bottom: 36,
+                  left: 36,
+                  child: Timer(
+                    buffer: const Duration(milliseconds: 1500),
+                    duration: const Duration(seconds: 3),
+                    onDone: timeUp,
+                  ),
+                ),
               ],
             ),
           ),
         ].reversed.toList(),
+      ),
+    );
+  }
+
+  void timeUp() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) {
+		  return FinalScore(correct: correct);
+		  /*
+          return ArtistsEyeScaffold(
+		   body: Column(
+            children: [
+              if (correct >= 20)
+                const Text('You win!')
+              else
+                const Text('Try again!'),
+              Text('You got $correct correct!'),
+            ],
+			),
+          );
+		  */
+        },
       ),
     );
   }
@@ -149,8 +183,8 @@ class _PlayState extends State<Play> {
   }
 
   double labColorDistance(Color a, Color b) {
-    final labA = LabColor.fromColor(a);
-    final labB = LabColor.fromColor(b);
+    final labA = OklabColor.fromColor(a);
+    final labB = OklabColor.fromColor(b);
 
     final adist = labA.a - labB.a;
     final bdist = labA.b - labB.b;
@@ -163,6 +197,7 @@ class _PlayState extends State<Play> {
     final correctColor = Color.lerp(colorLeft, colorRight, answer)!;
     final pickedColor = Color.lerp(colorLeft, colorRight, picked!)!;
 
-	return (1 - labColorDistance(correctColor, pickedColor) / 80).clamp(0, 1);
+    return (1 - labColorDistance(correctColor, pickedColor) * 8)
+        .clamp(0.0, 1.0);
   }
 }

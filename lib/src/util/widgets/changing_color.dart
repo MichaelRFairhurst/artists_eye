@@ -6,18 +6,22 @@ import 'package:flutter/material.dart';
 class ChangingColors extends StatelessWidget {
   final Widget Function(BuildContext, Color a, Color b, Widget? child) builder;
   final Widget? child;
+  final Duration? duration;
 
   const ChangingColors({
     required this.builder,
     this.child,
+    this.duration,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return ChangingColor(
+      duration: duration,
       builder: (context, firstColor) {
         return ChangingColor(
+          duration: duration,
           builder: (context, secondColor) {
             return AnimatedBuilder(
               animation: Listenable.merge([firstColor, secondColor]),
@@ -36,8 +40,11 @@ class ChangingColors extends StatelessWidget {
 class ChangingColor extends StatefulWidget {
   const ChangingColor({
     required this.builder,
+    Duration? duration,
     super.key,
-  });
+  }) : duration = duration ?? const Duration(seconds: 8);
+
+  final Duration duration;
 
   ChangingColor.valueBuilder(
       {required Widget Function(BuildContext, Color value, Widget? child)
@@ -76,7 +83,7 @@ class _ChangingColorState extends State<ChangingColor>
 
     controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: widget.duration,
     );
 
     final startColor = randomColor();
