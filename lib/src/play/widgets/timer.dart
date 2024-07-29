@@ -56,12 +56,10 @@ class _TimerState extends State<Timer> with SingleTickerProviderStateMixin {
     }
 
     if (left.isNegative) {
-      return 'TIME IS UP!';
+      return "TIME'S UP!";
     }
 
-    final sec = left.inSeconds.abs().toString().padLeft(2, '0');
-    //final ms = (left.inMilliseconds.abs() % 1000).toString().padLeft(3, '0');
-    return '$sec';
+    return left.inSeconds.abs().toString().padLeft(2, '0');
   }
 
   @override
