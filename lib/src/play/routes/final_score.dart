@@ -275,8 +275,8 @@ class MovingBackgroundPainter extends CustomPainter {
     canvas.drawPath(
         partsPath.shift(const Offset(0, 4)),
         Paint()
-          ..color = Colors.grey[800]!.withOpacity(0.5)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7));
+          ..color = Colors.grey[900]!.withOpacity(0.5)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12));
     canvas.drawPath(partsPath, darkGradient);
   }
 
