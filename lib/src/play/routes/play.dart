@@ -75,6 +75,9 @@ class _PlayState extends State<Play> {
 
   @override
   Widget build(BuildContext context) {
+    final incorrectStr = score.incorrect == 1
+        ? '${score.incorrect} mistake'
+        : '${score.incorrect} mistakes';
     return ArtistsEyeScaffold(
       thumb: ThumbWidget(
         text: 'Find me!',
@@ -85,8 +88,29 @@ class _PlayState extends State<Play> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         verticalDirection: VerticalDirection.up,
         children: [
-          Text('Match the color:\n (${score.correct} / 10)',
-              style: Theme.of(context).textTheme.titleLarge),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24).copyWith(top: 12),
+            child: Row(
+              children: [
+                Text(
+                  'Match the color:',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Spacer(),
+                if (score.incorrect == 0)
+                  Text(
+                    '${score.correct} / ${widget.challenge.goal}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  )
+                else
+                  Text(
+                    '${score.correct} / ${widget.challenge.goal}\n$incorrectStr',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           Expanded(
             child: Stack(
@@ -127,7 +151,7 @@ class _PlayState extends State<Play> {
                   child: Timer(
                     buffer: const Duration(milliseconds: 1500),
                     duration: widget.challenge.time,
-                    onDone: timeUp,
+                    onDone: endPlay,
                   ),
                 ),
               ],
@@ -138,7 +162,7 @@ class _PlayState extends State<Play> {
     );
   }
 
-  void timeUp() {
+  void endPlay() {
     final records = widget.challenge.getNewRecords(score);
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -173,9 +197,13 @@ class _PlayState extends State<Play> {
       ),
     );
 
-    setState(() {
-      newPuzzle();
-    });
+    if (widget.challenge.finished(score)) {
+      endPlay();
+    } else {
+      setState(() {
+        newPuzzle();
+      });
+    }
   }
 
   double labColorDistance(Color a, Color b) {

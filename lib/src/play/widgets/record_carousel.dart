@@ -51,7 +51,7 @@ class _RecordCarouselState extends State<RecordCarousel> {
         child: child,
       ),
       child: Text(
-        key: ValueKey(offset),
+        key: ValueKey(offset % widget.records.length),
         recordString(widget.records[offset % widget.records.length]),
         style: Theme.of(context).textTheme.titleLarge,
       ),
@@ -59,20 +59,21 @@ class _RecordCarouselState extends State<RecordCarousel> {
   }
 
   String recordString(RecordValue record) {
+	final val = record.value;
     switch (record.kind) {
       case RecordKind.fastestTime:
-        final secondsString = ((record.value as Duration).inMilliseconds / 1000)
+        final secondsString = ((val as Duration).inMilliseconds / 1000)
             .toStringAsFixed(2);
         return '$secondsString seconds';
       case RecordKind.highestAverageMatch:
-        final matchString = ((record.value as double) * 100).round();
+        final matchString = ((val as double) * 100).round();
         return '$matchString% overall accuracy';
       case RecordKind.mostPerfect:
-        return '${record.value} perfect matches';
+        return val == 1 ? '$val perfect match' : '$val perfect matches';
       case RecordKind.mostExcellent:
-        return '${record.value} excellent matches';
+        return val == 1 ? '$val excellent match' : '$val excellent matches';
       case RecordKind.fewestMistakes:
-        return 'only ${record.value} mistakes';
+        return val == 1 ? 'only $val mistake' : 'only $val mistakes';
     }
   }
 }
