@@ -1,4 +1,4 @@
-import 'package:artists_eye/src/color/models/color_effect.dart';
+import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/play/routes/play.dart';
 import 'package:artists_eye/src/scaffold/widgets/gradient_to_primary_area.dart';
 import 'package:artists_eye/src/scaffold/widgets/to_thumb_widget.dart';
@@ -7,17 +7,11 @@ import 'package:artists_eye/src/util/widgets/changing_color.dart';
 
 class ChallengeTile extends StatelessWidget {
   const ChallengeTile({
-    required this.name,
-    required this.id,
-    this.tileColorEffect = ColorEffect.none,
-    this.rightColorEffect = ColorEffect.none,
+    required this.challenge,
     super.key,
   });
 
-  final String name;
-  final String id;
-  final ColorEffect tileColorEffect;
-  final ColorEffect rightColorEffect;
+  final Challenge challenge;
 
   void onTap(BuildContext context, Color colorLeft, Color colorRight) {
     Navigator.push(
@@ -28,10 +22,9 @@ class ChallengeTile extends StatelessWidget {
         transitionsBuilder: (_, a, __, child) =>
             FadeTransition(opacity: a, child: child),
         pageBuilder: (_, __, ___) => Play(
-          challengeId: id,
+          challenge: challenge,
           colorLeft: colorLeft,
           colorRight: colorRight,
-          isWheel: name == 'Color Wheel',
         ),
       ),
     );
@@ -44,9 +37,9 @@ class ChallengeTile extends StatelessWidget {
       child: ChangingColors(
         builder: (context, colorLeft, colorRight, _) {
           return GradientToPrimaryArea(
-            heroTag: 'gradient$id',
+            heroTag: 'gradient${challenge.id}',
             colorLeft: colorLeft,
-            colorRight: rightColorEffect.perform(colorRight),
+            colorRight: challenge.rightColorPreviewEffect.perform(colorRight),
             onTap: () {
               onTap(context, colorLeft, colorRight);
             },
@@ -55,15 +48,15 @@ class ChallengeTile extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(24),
                   child: ToThumbWidget(
-				    heroTag: 'findme$id',
-                    color: tileColorEffect
+                    heroTag: 'findme${challenge.id}',
+                    color: challenge.tilePreviewEffect
                         .perform(Color.lerp(colorLeft, colorRight, 0.6)!),
                   ),
                 ),
                 const SizedBox(width: 24),
                 Expanded(
                   child: Text(
-                    name,
+                    challenge.name,
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge!

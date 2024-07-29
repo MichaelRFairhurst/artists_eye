@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
+import 'package:artists_eye/src/play/models/score.dart';
 import 'package:artists_eye/src/play/routes/final_score.dart';
 import 'package:artists_eye/src/play/widgets/color_comparison.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
@@ -14,25 +16,22 @@ import 'package:flutter_color_models/flutter_color_models.dart';
 
 class Play extends StatefulWidget {
   const Play({
-    required this.challengeId,
-    required this.colorLeft,
-    required this.colorRight,
-    this.isWheel = false,
+    required this.challenge,
+    this.colorLeft,
+    this.colorRight,
     super.key,
   });
 
-  final String challengeId;
-  final bool isWheel;
-  final Color colorLeft;
-  final Color colorRight;
+  final Challenge challenge;
+  final Color? colorLeft;
+  final Color? colorRight;
 
   @override
   State<Play> createState() => _PlayState();
 }
 
 class _PlayState extends State<Play> {
-  int correct = 0;
-  int tests = 0;
+  final score = Score();
 
   late Color colorLeft;
   late Color colorRight;
@@ -44,10 +43,15 @@ class _PlayState extends State<Play> {
   @override
   void initState() {
     super.initState();
+    score.start();
 
-    colorLeft = widget.colorLeft;
-    colorRight = widget.colorRight;
-    answer = random.nextDouble();
+    if (widget.colorLeft != null && widget.colorRight != null) {
+      colorLeft = widget.colorLeft!;
+      colorRight = widget.colorRight!;
+      answer = random.nextDouble();
+    } else {
+      newPuzzle();
+    }
   }
 
   void newPuzzle() {
@@ -74,14 +78,14 @@ class _PlayState extends State<Play> {
     return ArtistsEyeScaffold(
       thumb: ThumbWidget(
         text: 'Find me!',
-        heroTag: 'findme${widget.challengeId}',
+        heroTag: 'findme${widget.challenge.id}',
         color: Color.lerp(colorLeft, colorRight, answer)!,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         verticalDirection: VerticalDirection.up,
         children: [
-          Text('Match the color:\n ($correct / 20)',
+          Text('Match the color:\n (${score.correct} / 10)',
               style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           Expanded(
@@ -90,7 +94,7 @@ class _PlayState extends State<Play> {
               children: [
                 Positioned.fill(
                   child: PrimaryAreaGradient(
-                    heroTag: 'gradient${widget.challengeId}',
+                    heroTag: 'gradient${widget.challenge.id}',
                     colorLeft: colorLeft,
                     colorRight: colorRight,
                   ),
@@ -102,16 +106,16 @@ class _PlayState extends State<Play> {
                     onSelect: (value) {
                       setState(() {
                         picked = value;
-                        tests++;
-                        if (getScore() > 0.9) {
-                          correct++;
-                        }
+                        score.addMatch(getScore());
                       });
+                      if (widget.challenge.finished(score)) {
+                        score.end();
+                      }
                       showComparisonModal();
                     },
                   ),
                 ),
-                if (widget.isWheel)
+                if (widget.challenge.isWheel)
                   const Positioned.fill(
                     child: FadeIn(
                       child: ColorWheel(),
@@ -122,9 +126,7 @@ class _PlayState extends State<Play> {
                   left: 36,
                   child: Timer(
                     buffer: const Duration(milliseconds: 1500),
-                    duration: widget.isWheel
-                        ? const Duration(seconds: 3)
-                        : const Duration(seconds: 60),
+                    duration: widget.challenge.time,
                     onDone: timeUp,
                   ),
                 ),
@@ -137,10 +139,15 @@ class _PlayState extends State<Play> {
   }
 
   void timeUp() {
+    final records = widget.challenge.getNewRecords(score);
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) {
-          return FinalScore(correct: correct);
+          return FinalScore(
+            score: score,
+            challenge: widget.challenge,
+            records: records,
+          );
         },
       ),
     );
@@ -159,7 +166,7 @@ class _PlayState extends State<Play> {
               pickedColor: Color.lerp(colorLeft, colorRight, picked!)!,
               correctColor: Color.lerp(colorLeft, colorRight, answer)!,
               match: getScore(),
-              challengeId: widget.challengeId,
+              challengeId: widget.challenge.id,
             ),
           );
         },

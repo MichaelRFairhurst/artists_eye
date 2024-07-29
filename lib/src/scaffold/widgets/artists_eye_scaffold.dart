@@ -10,9 +10,11 @@ class ArtistsEyeScaffold extends StatefulWidget {
     this.thumb,
     this.primaryAreaGradient,
     this.background,
+    this.titleColor,
     super.key,
   });
 
+  final Color? titleColor;
   final Widget? thumb;
   final Widget? primaryAreaGradient;
   final Widget? background;
@@ -41,8 +43,13 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
                   child: Row(
                     children: [
                       const SizedBox(width: 24),
-                      Text("Artist's Eye",
-                          style: Theme.of(context).appBarTheme.titleTextStyle),
+                      Text(
+                        "Artist's Eye",
+                        style: Theme.of(context)
+                            .appBarTheme
+                            .titleTextStyle!
+                            .copyWith(color: widget.titleColor),
+                      ),
                       const Spacer(),
                       if (widget.thumb != null) widget.thumb!,
                     ],

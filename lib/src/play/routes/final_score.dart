@@ -1,5 +1,11 @@
 import 'dart:math';
 import 'dart:ui';
+import 'package:artists_eye/src/challenges/models/challenge.dart';
+import 'package:artists_eye/src/challenges/models/record_history.dart';
+import 'package:artists_eye/src/play/models/score.dart';
+import 'package:artists_eye/src/play/routes/play.dart';
+import 'package:artists_eye/src/play/widgets/record_carousel.dart';
+import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
 import 'package:artists_eye/src/util/widgets/changing_color.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:vector_math/vector_math_64.dart' show Matrix4, Vector4;
@@ -9,15 +15,20 @@ import 'package:flutter/material.dart' hide Matrix4;
 
 class FinalScore extends StatelessWidget {
   const FinalScore({
-    required this.correct,
+    required this.score,
+    required this.challenge,
+    required this.records,
     super.key,
   });
 
-  final int correct;
+  final Challenge challenge;
+  final Score score;
+  final List<RecordValue> records;
 
   @override
   Widget build(BuildContext context) {
     return ArtistsEyeScaffold(
+      titleColor: Colors.white,
       background: ChangingColors(
         duration: const Duration(seconds: 16),
         builder: (context, colorLeft, colorRight, child) {
@@ -30,7 +41,7 @@ class FinalScore extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (correct >= 20)
+            if (challenge.isWin(score))
               Text('You win!',
                   style: Theme.of(context)
                       .textTheme
@@ -42,17 +53,170 @@ class FinalScore extends StatelessWidget {
                       .textTheme
                       .displayLarge!
                       .copyWith(color: Colors.white)),
-            Text('You got $correct correct!',
+            const SizedBox(height: 16),
+            Text('${score.correct} correct, ${score.incorrect} mistakes',
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge!
                     .copyWith(color: Colors.white)),
+            const SizedBox(height: 12),
+            if (score.perfect > 0) ...[
+              Text('${score.perfect} perfect matches!',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium!
+                      .copyWith(color: Colors.white)),
+              const SizedBox(height: 12),
+            ],
+            if (score.excellent > 0) ...[
+              Text('${score.excellent} excellent matches!',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium!
+                      .copyWith(color: Colors.white)),
+              const SizedBox(height: 12),
+            ],
+            Text('${(score.averageMatch * 100).round()}% overall accuracy',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium!
+                    .copyWith(color: Colors.white)),
           ],
         ),
       ),
-      body: const SizedBox(),
+      body: SafeArea(
+        minimum: const EdgeInsets.only(bottom: 36),
+        child: Column(
+          children: [
+            if (records.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 24),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    height: 120,
+                    width: double.infinity,
+                    child: SkewedBoxBackground(
+                      color: Colors.white.withOpacity(0.6),
+                      skew: 18,
+                      blur: 1,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                              records.length == 1
+                                  ? 'New record!'
+                                  : '${records.length} new records!',
+                              style: Theme.of(context).textTheme.displayMedium),
+                          RecordCarousel(
+                            records: records,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            const Spacer(),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: TweenAnimationBuilder(
+                tween: Tween(begin: 120.0, end: 0.0),
+                duration: const Duration(seconds: 3),
+                curve: Curves.easeInOutQuart,
+                builder: (context, value, child) {
+                  return Transform.translate(
+				    offset: Offset(value, 0),
+					child: child,
+				  );
+                },
+				child: ThumbWidget(
+                    color: Colors.grey[200]!,
+                    text: 'Play again',
+                    height: 110,
+                    width: 120,
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => Play(
+                            challenge: challenge,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
+}
+
+class SkewedBoxBackground extends StatelessWidget {
+  const SkewedBoxBackground({
+    required this.skew,
+    required this.blur,
+    required this.color,
+    required this.child,
+    super.key,
+  });
+
+  final Widget child;
+  final double skew;
+  final double blur;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: SkewedBoxBackgroundPainter(
+        blur: blur,
+        skew: skew,
+        color: color,
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: skew),
+        child: child,
+      ),
+    );
+  }
+}
+
+class SkewedBoxBackgroundPainter extends CustomPainter {
+  const SkewedBoxBackgroundPainter({
+    required this.skew,
+    required this.blur,
+    required this.color,
+  });
+
+  final double skew;
+  final double blur;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(skew, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width - skew, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur));
+  }
+
+  @override
+  bool shouldRepaint(SkewedBoxBackgroundPainter oldDelegate) =>
+      skew != oldDelegate.skew ||
+      color != oldDelegate.color ||
+      blur != oldDelegate.blur;
 }
 
 class MovingBackground extends StatefulWidget {

@@ -1,3 +1,4 @@
+import 'package:artists_eye/src/play/models/score.dart';
 import 'package:flutter/material.dart';
 
 class ColorComparison extends StatelessWidget {
@@ -137,12 +138,12 @@ class ColorComparison extends StatelessWidget {
   String getScoreString() => '$scorePercent% match';
 
   String scoreText() {
-    if (match == 1.0) {
+    if (match >= perfectMatchGTE) {
       return 'Perfect!';
-    } else if (match >= 0.97) {
+    } else if (match >= excellentMatchGTE) {
       return 'Excellent!';
-    } else if (match > 0.90) {
-      return 'Great!';
+    } else if (match > goodMatchGTE) {
+      return 'Good!';
     } else if (match > 0.8) {
       return 'Almost!';
     } else if (match > 0.5) {

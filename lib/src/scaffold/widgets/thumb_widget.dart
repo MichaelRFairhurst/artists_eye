@@ -9,10 +9,12 @@ class ThumbWidget extends StatelessWidget {
     required this.text,
     this.height = defaultThumbHeight,
     this.width = defaultThumbWidth,
-	this.heroTag = 'thumb',
+    this.heroTag = 'thumb',
+    this.onTap,
     super.key,
   });
 
+  final void Function()? onTap;
   final double height;
   final double width;
   final Color color;
@@ -22,33 +24,41 @@ class ThumbWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Hero(
-	  tag: heroTag,
-	child: DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(height),
-          bottomLeft: Radius.circular(height),
+      tag: heroTag,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(height),
+            bottomLeft: Radius.circular(height),
+          ),
+          color: color,
         ),
-        color: color,
-      ),
-      child: SizedBox(
-        height: height,
-        width: width,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: SizedBox(
-            width: height,
-            height: height,
-            child: Center(
-              child: Text(
-                text,
-                style: Theme.of(context).textTheme.titleMedium,
+        child: SizedBox(
+          height: height,
+          width: width,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: height,
+              height: height,
+              child: Material(
+			    color: Colors.transparent,
+                borderRadius: BorderRadius.circular(height),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(height),
+                  onTap: onTap,
+                  child: Center(
+                    child: Text(
+                      text,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ),
       ),
-	  ),
     );
   }
 }
