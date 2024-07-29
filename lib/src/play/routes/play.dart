@@ -122,7 +122,9 @@ class _PlayState extends State<Play> {
                   left: 36,
                   child: Timer(
                     buffer: const Duration(milliseconds: 1500),
-                    duration: const Duration(seconds: 3),
+                    duration: widget.isWheel
+                        ? const Duration(seconds: 3)
+                        : const Duration(seconds: 60),
                     onDone: timeUp,
                   ),
                 ),
@@ -138,20 +140,7 @@ class _PlayState extends State<Play> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) {
-		  return FinalScore(correct: correct);
-		  /*
-          return ArtistsEyeScaffold(
-		   body: Column(
-            children: [
-              if (correct >= 20)
-                const Text('You win!')
-              else
-                const Text('Try again!'),
-              Text('You got $correct correct!'),
-            ],
-			),
-          );
-		  */
+          return FinalScore(correct: correct);
         },
       ),
     );
