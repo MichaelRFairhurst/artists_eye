@@ -113,33 +113,23 @@ class _MovingBackgroundState extends State<MovingBackground>
 class MovingBackgroundParts extends ChangeNotifier {
   MovingBackgroundParts(Random random)
       : parts = [
-          Circle(
-            radius: 5 / 6,
-            distance: 0,
-            axis: 0,
-            axisVelocity: 0,
-            distanceVelocity: 0,
-          ),
-          ...generateSkewedRects(random, 9),
-          ...generateCircles(random, 5)
+          ...generateSkewedRects(random, 7),
+          ...generateCircles(random, 4)
         ];
-
-  static double randomAxisVelocity(Random random) =>
-      lerpDouble(4, 6, random.nextDouble())! * (random.nextBool() ? 1 : -1);
 
   static double randomRotationVelocity(Random random) =>
       lerpDouble(8, 10, random.nextDouble())! * (random.nextBool() ? 1 : -1);
 
   static double randomSkew(Random random) =>
-      lerpDouble(0.1, 0.4, random.nextDouble())! * (random.nextBool() ? 1 : -1);
+      lerpDouble(0.05, 0.35, random.nextDouble())! *
+      (random.nextBool() ? 1 : -1);
 
   static List<SkewedRect> generateSkewedRects(Random random, int count) =>
       <SkewedRect>[
         for (int i = 0; i < count; ++i)
           SkewedRect(
-            //axis: random.nextDouble() * 2 * pi / 4 + 2 * pi / i,
             axis: i * 2 * pi / count,
-            axisVelocity: randomAxisVelocity(random),
+            axisVelocity: i % 2 == 0 ? -5 : 5,
             distance: random.nextDouble() * 2 * pi,
             distanceVelocity: lerpDouble(3, 5, random.nextDouble())!,
             rect: Size(lerpDouble(0.2, 0.8, random.nextDouble())!,
@@ -154,7 +144,7 @@ class MovingBackgroundParts extends ChangeNotifier {
         for (int i = 0; i < count; ++i)
           Circle(
             axis: random.nextDouble() * 2 * pi,
-            axisVelocity: randomAxisVelocity(random),
+            axisVelocity: i % 2 == 0 ? -3 : 3,
             distance: random.nextDouble() * 2 * pi,
             distanceVelocity: lerpDouble(3, 5, random.nextDouble())!,
             radius: lerpDouble(0.1, 0.45, random.nextDouble())!,
@@ -241,29 +231,34 @@ class MovingBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final darkGradient = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          colorLeft,
-          colorRight,
-        ],
-        begin: Alignment.topRight,
-        end: Alignment.bottomLeft,
-      ).createShader(const Offset(0, 0) & size);
+    final lightGradient = createGradient(size, 0.6);
+    final darkGradient = createGradient(size, 1.0);
 
-    final lightGradient = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          colorLeft.withOpacity(0.6),
-          colorRight.withOpacity(0.6),
-        ],
-        begin: Alignment.topRight,
-        end: Alignment.bottomLeft,
-      ).createShader(const Offset(0, 0) & size);
-
-    canvas.drawRect(const Offset(0, 0) & size, Paint()..color = Colors.white);
     canvas.drawRect(const Offset(0, 0) & size, lightGradient);
 
+    final shape = getShape(size);
+
+    canvas.drawPath(
+        shape.shift(const Offset(0, 4)),
+        Paint()
+          ..color = Colors.grey[900]!.withOpacity(0.5)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12));
+    canvas.drawPath(shape, darkGradient);
+  }
+
+  Paint createGradient(Size size, double opacity) {
+    return Paint()
+      ..shader = LinearGradient(
+        colors: [
+          colorLeft.withOpacity(opacity),
+          colorRight.withOpacity(opacity),
+        ],
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+      ).createShader(const Offset(0, 0) & size);
+  }
+
+  Path getShape(Size size) {
     final partsPath = movingParts.parts
         .map(driftingToPath)
         .reduce((a, b) => Path.combine(PathOperation.union, a, b))
@@ -272,12 +267,17 @@ class MovingBackgroundPainter extends CustomPainter {
               ..scale(size.width / 2, size.width / 2, 1.0))
             .storage);
 
-    canvas.drawPath(
-        partsPath.shift(const Offset(0, 4)),
-        Paint()
-          ..color = Colors.grey[900]!.withOpacity(0.5)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12));
-    canvas.drawPath(partsPath, darkGradient);
+    final mainCircle = Path()
+      ..addOval(Rect.fromCircle(
+        center: Offset(size.width / 2, size.height / 2),
+        radius: size.width * 5 / 12,
+      ));
+
+    return Path.combine(
+      PathOperation.union,
+      mainCircle,
+      partsPath,
+    );
   }
 
   Path driftingToPath(Drifting drifting) {
@@ -290,27 +290,30 @@ class MovingBackgroundPainter extends CustomPainter {
     }
   }
 
+  double sinLerp(double minVal, double maxVal, double sinVal) =>
+      lerpDouble(minVal, maxVal, (1 + sin(sinVal)) / 2)!;
+
+  Offset driftingCenter(Drifting part) {
+    final centerTransform = Matrix4.identity()..rotateZ(part.axis);
+    final centerVec = centerTransform
+        .transformed(Vector4(sinLerp(0.8, 0.95, part.distance), 0, 0, 0));
+    return Offset(centerVec[0], centerVec[1] * 1.9);
+  }
+
   Path circleToPath(Circle circle) {
-    final centerTransform = Matrix4.identity()..rotateZ(circle.axis);
-    final centerVec =
-        centerTransform.transformed(Vector4(sin(circle.distance), 0, 0, 0));
-    final center = Offset(centerVec[0], centerVec[1] * 1.9);
+    final center = driftingCenter(circle);
 
     return Path()
       ..addOval(Rect.fromCircle(center: center, radius: circle.radius));
   }
 
   Path rectToPath(SkewedRect rect) {
+    final center = driftingCenter(rect);
     final size = rect.rect;
 
     final halfSkew = rect.skew * size.height;
     final halfHeight = size.height / 2;
     final halfWidth = size.width / 2;
-
-    final centerTransform = Matrix4.identity()..rotateZ(rect.axis);
-    final centerVec = centerTransform
-        .transformed(Vector4(0.75 + sin(rect.distance) * 0.25, 0, 0, 0));
-    final center = Offset(centerVec[0], centerVec[1] * 1.9);
 
     final topLeft = Offset(-halfWidth - halfSkew, -halfHeight);
     final topRight = Offset(halfWidth - halfSkew, -halfHeight);
