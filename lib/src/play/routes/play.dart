@@ -7,6 +7,7 @@ import 'package:artists_eye/src/color/widgets/color_wheel.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 import 'package:artists_eye/src/play/routes/final_score.dart';
 import 'package:artists_eye/src/play/widgets/color_comparison.dart';
+import 'package:artists_eye/src/play/widgets/mistakes_widget.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
 import 'package:artists_eye/src/play/widgets/progress.dart';
 import 'package:artists_eye/src/play/widgets/timer.dart';
@@ -173,6 +174,15 @@ class _PlayState extends State<Play> {
   }
 
   void showComparisonModal(ColorMatch colorMatch) async {
+    final Widget mistakesWidget;
+    if (!widget.challenge.isCorrect(colorMatch.type)) {
+      mistakesWidget = MistakesWidget(
+        mistakes: score.incorrect(widget.challenge.difficulty),
+        allowedMistakes: widget.challenge.difficulty.allowedMistakes,
+      );
+    } else {
+      mistakesWidget = const SizedBox();
+    }
     await Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
@@ -182,6 +192,7 @@ class _PlayState extends State<Play> {
           return FadeTransition(
             opacity: animation,
             child: ColorComparison(
+              mistakesWidget: mistakesWidget,
               match: colorMatch,
               challenge: widget.challenge,
             ),

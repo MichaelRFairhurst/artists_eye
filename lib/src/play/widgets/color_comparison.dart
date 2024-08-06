@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 
 class ColorComparison extends StatelessWidget {
   const ColorComparison({
+    required this.mistakesWidget,
     required this.match,
     required this.challenge,
     super.key,
   });
 
+  final Widget mistakesWidget;
   final Challenge challenge;
   final ColorMatch match;
 
@@ -20,12 +22,21 @@ class ColorComparison extends StatelessWidget {
       },
       behavior: HitTestBehavior.opaque,
       child: Stack(
+        alignment: Alignment.center,
         children: [
           Center(
             child: AspectRatio(
               aspectRatio: 1,
               child: Stack(
+                alignment: Alignment.center,
                 children: [
+                  Positioned(
+                    top: 0,
+                    child: Transform.translate(
+                      offset: const Offset(0, -6),
+                      child: mistakesWidget,
+                    ),
+                  ),
                   targetColorBubble(true),
                   Padding(
                     padding: const EdgeInsets.all(48),
