@@ -21,22 +21,28 @@ class Score {
   Duration get time => _end!.difference(_start!);
 
   void start() {
-	_start = DateTime.now();
+    _start = DateTime.now();
   }
 
   void end() {
-	_end = DateTime.now();
+    _end = DateTime.now();
   }
 
-  void addMatch(double match) {
-	_total++;
-	_sum += match;
-	if (match >= perfectMatchGTE) {
-	  _perfect++;
-	} else if (match >= excellentMatchGTE) {
-	  _excellent++;
-	} else if (match >= goodMatchGTE) {
-	  _good++;
-	}
+  bool addMatch(double match) {
+    _total++;
+    _sum += match;
+
+    if (match >= perfectMatchGTE) {
+      _perfect++;
+      return true;
+    } else if (match >= excellentMatchGTE) {
+      _excellent++;
+      return true;
+    } else if (match >= goodMatchGTE) {
+      _good++;
+      return true;
+    }
+
+    return false;
   }
 }

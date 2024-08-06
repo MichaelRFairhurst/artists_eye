@@ -1,4 +1,5 @@
 import 'package:artists_eye/src/challenges/models/challenge.dart';
+import 'package:artists_eye/src/color/widgets/changing_color_test.dart';
 import 'package:artists_eye/src/play/routes/play.dart';
 import 'package:artists_eye/src/scaffold/widgets/gradient_to_primary_area.dart';
 import 'package:artists_eye/src/scaffold/widgets/to_thumb_widget.dart';
@@ -34,8 +35,11 @@ class ChallengeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 10),
-      child: ChangingColors(
-        builder: (context, colorLeft, colorRight, _) {
+      child: ChangingColorTest(
+        makeColorTest: challenge.makeColorTest,
+        builder: (context, colorTest, _) {
+          final colorLeft = colorTest.colorLeft;
+          final colorRight = colorTest.colorRight;
           return GradientToPrimaryArea(
             heroTag: 'gradient${challenge.id}',
             colorLeft: colorLeft,

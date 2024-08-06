@@ -3,14 +3,12 @@ import 'package:flutter/scheduler.dart';
 
 class Timer extends StatefulWidget {
   const Timer({
-    required this.duration,
-	required this.onDone,
     this.buffer = Duration.zero,
+    this.running = true,
     super.key,
   });
 
-  final void Function() onDone;
-  final Duration duration;
+  final bool running;
   final Duration buffer;
 
   @override
@@ -32,34 +30,34 @@ class _TimerState extends State<Timer> with SingleTickerProviderStateMixin {
   }
 
   @override
+  void didUpdateWidget(Timer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.running == ticker.isActive) {
+      return;
+    }
+
+    if (!widget.running) {
+      ticker.stop();
+    } else {
+      ticker.start();
+    }
+  }
+
+  @override
   void dispose() {
     ticker.dispose();
     super.dispose();
   }
 
   void onTick(Duration _) {
-	setState(() {});
-
-    if (start.add(widget.buffer + widget.duration).isBefore(DateTime.now())) {
-	  ticker.stop();
-	  widget.onDone();
-	}
+    setState(() {});
   }
 
   String getTimeText() {
     final now = DateTime.now();
     final elapsed = now.difference(start);
-    final left = widget.duration + widget.buffer - elapsed;
 
-    if (left > widget.duration) {
-      return '';
-    }
-
-    if (left.isNegative) {
-      return "TIME'S UP!";
-    }
-
-    return left.inSeconds.abs().toString().padLeft(2, '0');
+    return elapsed.inSeconds.abs().toString().padLeft(2, '0');
   }
 
   @override

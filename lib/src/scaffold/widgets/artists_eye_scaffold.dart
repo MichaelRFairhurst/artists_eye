@@ -36,9 +36,9 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
               const Positioned.fill(
                 child: ChangingBackgroundGradient(),
               ),
-		  Positioned.fill(
-			child: getOverBackground(),
-		  ),
+          Positioned.fill(
+            child: getOverBackground(),
+          ),
         ],
       ),
     );
@@ -49,6 +49,7 @@ class ArtistsEyeScaffoldState extends State<ArtistsEyeScaffold> {
       children: [
         if (widget.primaryAreaGradient != null)
           Positioned.fill(
+            top: 12,
             child: widget.primaryAreaGradient!,
           ),
         Positioned.fill(

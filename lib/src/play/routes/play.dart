@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:artists_eye/src/challenges/models/challenge.dart';
+import 'package:artists_eye/src/color/models/cam16.dart';
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 import 'package:artists_eye/src/play/routes/final_score.dart';
 import 'package:artists_eye/src/play/widgets/color_comparison.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
+import 'package:artists_eye/src/play/widgets/progress.dart';
 import 'package:artists_eye/src/play/widgets/timer.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
 import 'package:artists_eye/src/scaffold/widgets/primary_area_gradient.dart';
@@ -32,10 +34,11 @@ class Play extends StatefulWidget {
 
 class _PlayState extends State<Play> {
   final score = Score();
+  final completed = <Color>[];
 
   late Color colorLeft;
   late Color colorRight;
-  late double answer;
+  late Color answer;
   double? picked;
 
   final random = Random();
@@ -48,116 +51,99 @@ class _PlayState extends State<Play> {
     if (widget.colorLeft != null && widget.colorRight != null) {
       colorLeft = widget.colorLeft!;
       colorRight = widget.colorRight!;
-      answer = random.nextDouble();
+      answer = Color.lerp(colorLeft, colorRight, random.nextDouble())!;
     } else {
       newPuzzle();
     }
   }
 
   void newPuzzle() {
-    colorLeft = Color.fromARGB(
-      0xFF,
-      random.nextInt(0xFF),
-      random.nextInt(0xFF),
-      random.nextInt(0xFF),
-    );
-
-    colorRight = Color.fromARGB(
-      0xFF,
-      random.nextInt(0xFF),
-      random.nextInt(0xFF),
-      random.nextInt(0xFF),
-    );
-
-    answer = random.nextDouble();
-    picked = null;
+    final newTest = widget.challenge.makeColorTest();
+    colorLeft = newTest.colorLeft;
+    colorRight = newTest.colorRight;
+    answer = newTest.toFind;
   }
+
+  Widget get heading => score.correct == 0 ? matchTextHeading : progress;
+
+  Widget get matchTextHeading => Text(
+        'Match the color:',
+        style: Theme.of(context).textTheme.titleLarge,
+      );
+
+  Widget get progress => Progress(
+        completed: completed,
+        total: widget.challenge.goal,
+      );
 
   @override
   Widget build(BuildContext context) {
-    final incorrectStr = score.incorrect == 1
-        ? '${score.incorrect} mistake'
-        : '${score.incorrect} mistakes';
     return ArtistsEyeScaffold(
       thumb: ThumbWidget(
         text: 'Find me!',
         heroTag: 'findme${widget.challenge.id}',
-        color: Color.lerp(colorLeft, colorRight, answer)!,
+        color: answer,
       ),
+      background: Container(color: Colors.white),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        verticalDirection: VerticalDirection.up,
         children: [
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 24).copyWith(top: 12),
-            child: Row(
-              children: [
-                Text(
-                  'Match the color:',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const Spacer(),
-                if (score.incorrect == 0)
-                  Text(
-                    '${score.correct} / ${widget.challenge.goal}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  )
-                else
-                  Text(
-                    '${score.correct} / ${widget.challenge.goal}\n$incorrectStr',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-              ],
-            ),
+            child: heading,
           ),
           const SizedBox(height: 12),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Positioned.fill(
-                  child: PrimaryAreaGradient(
-                    heroTag: 'gradient${widget.challenge.id}',
-                    colorLeft: colorLeft,
-                    colorRight: colorRight,
-                  ),
-                ),
-                Positioned.fill(
-                  child: PickFromGradient(
-                    colorLeft: colorLeft,
-                    colorRight: colorRight,
-                    onSelect: (value) {
-                      setState(() {
-                        picked = value;
-                        score.addMatch(getScore());
-                      });
-                      if (widget.challenge.finished(score)) {
-                        score.end();
-                      }
-                      showComparisonModal();
-                    },
-                  ),
-                ),
-                if (widget.challenge.isWheel)
-                  const Positioned.fill(
-                    child: FadeIn(
-                      child: ColorWheel(),
-                    ),
-                  ),
-                Positioned(
-                  bottom: 36,
-                  left: 36,
-                  child: Timer(
-                    buffer: const Duration(milliseconds: 1500),
-                    duration: widget.challenge.time,
-                    onDone: endPlay,
-                  ),
-                ),
-              ],
+        ],
+      ),
+      primaryAreaGradient: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Positioned.fill(
+            child: PrimaryAreaGradient(
+              heroTag: 'gradient${widget.challenge.id}',
+              colorLeft: colorLeft,
+              colorRight: colorRight,
             ),
           ),
-        ].reversed.toList(),
+          Positioned.fill(
+            child: PickFromGradient(
+              colorLeft: colorLeft,
+              colorRight: colorRight,
+              onSelect: (value) {
+                setState(() {
+                  picked = value;
+                  if (score.addMatch(getScore())) {
+                    final pickedColor =
+                        Color.lerp(colorLeft, colorRight, value)!;
+                    final hsv = HSLColor.fromColor(pickedColor);
+                    completed.add(hsv
+                        .withSaturation(hsv.saturation.clamp(0, 0.7))
+                        .toColor());
+                  }
+                });
+                if (widget.challenge.finished(score)) {
+                  score.end();
+                }
+                showComparisonModal();
+              },
+            ),
+          ),
+          if (widget.challenge.isWheel)
+            const Positioned.fill(
+              child: FadeIn(
+                child: ColorWheel(),
+              ),
+            ),
+          Positioned(
+            bottom: 36,
+            left: 36,
+            child: Timer(
+              buffer: const Duration(milliseconds: 1500),
+              running: !widget.challenge.finished(score),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -188,7 +174,7 @@ class _PlayState extends State<Play> {
             opacity: animation,
             child: ColorComparison(
               pickedColor: Color.lerp(colorLeft, colorRight, picked!)!,
-              correctColor: Color.lerp(colorLeft, colorRight, answer)!,
+              correctColor: answer,
               match: getScore(),
               challengeId: widget.challenge.id,
             ),
@@ -206,6 +192,17 @@ class _PlayState extends State<Play> {
     }
   }
 
+  double cam16Score(Color a, Color b) {
+    final dist = Cam16Color.fromXYZ(XyzColor.fromColor(a))
+        .distanceTo(Cam16Color.fromXYZ(XyzColor.fromColor(b)));
+
+    return (1 - dist / 200).clamp(0.0, 1.0);
+  }
+
+  double labScore(Color a, Color b) {
+    return (1 - labColorDistance(a, b) / 50).clamp(0.0, 1.0);
+  }
+
   double labColorDistance(Color a, Color b) {
     final labA = OklabColor.fromColor(a);
     final labB = OklabColor.fromColor(b);
@@ -218,10 +215,9 @@ class _PlayState extends State<Play> {
   }
 
   double getScore() {
-    final correctColor = Color.lerp(colorLeft, colorRight, answer)!;
+    final correctColor = answer;
     final pickedColor = Color.lerp(colorLeft, colorRight, picked!)!;
 
-    return (1 - labColorDistance(correctColor, pickedColor) * 8)
-        .clamp(0.0, 1.0);
+    return cam16Score(correctColor, pickedColor);
   }
 }
