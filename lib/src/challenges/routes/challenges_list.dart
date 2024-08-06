@@ -40,13 +40,13 @@ class ChallengesList extends StatelessWidget {
             ),
             Challenge(
               difficulty: medium,
-              id: 'brightness',
+              id: 'brightness2',
               name: 'Match Lightness II',
               makeColorTest: Challenge.matchBrightness,
             ),
             Challenge(
               difficulty: medium,
-              id: 'saturation',
+              id: 'saturation2',
               name: 'Match Intensity II',
               makeColorTest: Challenge.matchSaturation,
             ),
