@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:artists_eye/src/challenges/models/difficulty.dart';
 import 'package:artists_eye/src/challenges/models/record_history.dart';
 import 'package:artists_eye/src/color/models/color_effect.dart';
+import 'package:artists_eye/src/color/models/match_type.dart';
 import 'package:artists_eye/src/play/models/color_test.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 import 'package:flutter/painting.dart';
@@ -10,40 +12,36 @@ class Challenge {
   Challenge({
     required this.name,
     required this.id,
-    required this.goal,
-    required this.maxMistakes,
+    required this.difficulty,
     required this.makeColorTest,
     this.isWheel = false,
     this.tilePreviewEffect = ColorEffect.none,
     this.rightColorPreviewEffect = ColorEffect.none,
   }) : recordHistory = RecordHistory(
-          mistakesAllowed: maxMistakes,
+          mistakesAllowed: difficulty.allowedMistakes,
         );
 
   final String name;
   final String id;
   final bool isWheel;
-  final int goal;
-  final int maxMistakes;
+  final Difficulty difficulty;
   final RecordHistory recordHistory;
   final ColorTest Function() makeColorTest;
 
   final ColorEffect tilePreviewEffect;
   final ColorEffect rightColorPreviewEffect;
 
-  bool isWin(Score score) {
-    return score.correct >= goal && score.incorrect <= maxMistakes;
-  }
+  bool isWin(Score score) => difficulty.isWin(score);
 
-  bool finished(Score score) {
-    return score.correct >= goal || score.incorrect >= maxMistakes;
-  }
+  bool finished(Score score) => difficulty.finished(score);
+
+  bool isCorrect(MatchType matchType) => difficulty.isCorrect(matchType);
 
   List<RecordValue> getNewRecords(Score newScore) {
     if (!isWin(newScore)) {
       return const [];
     }
-    return recordHistory.getNewRecords(newScore);
+    return recordHistory.getNewRecords(newScore, difficulty);
   }
 
   static ColorTest matchBrightness() {

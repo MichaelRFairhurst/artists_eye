@@ -1,8 +1,11 @@
+import 'package:artists_eye/src/challenges/models/difficulty.dart';
+import 'package:artists_eye/src/color/models/match_type.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 
 enum RecordKind {
   fastestTime,
   mostExcellent,
+  mostSuperb,
   mostPerfect,
   fewestMistakes,
   highestAverageMatch,
@@ -10,9 +13,9 @@ enum RecordKind {
 
 class RecordHistory {
   RecordHistory({
-	required int mistakesAllowed,
+    required int mistakesAllowed,
   }) {
-	fewestMistakes.value = mistakesAllowed;
+    fewestMistakes.value = mistakesAllowed;
   }
 
   final fastestTime = RecordValue<Duration>(
@@ -22,13 +25,19 @@ class RecordHistory {
 
   final mostExcellent = RecordValue<int>(
     kind: RecordKind.mostExcellent,
-	value: 0,
+    value: 0,
+    preferLower: false,
+  );
+
+  final mostSuperb = RecordValue<int>(
+    kind: RecordKind.mostExcellent,
+    value: 0,
     preferLower: false,
   );
 
   final mostPerfect = RecordValue<int>(
     kind: RecordKind.mostPerfect,
-	value: 0,
+    value: 0,
     preferLower: false,
   );
 
@@ -42,11 +51,17 @@ class RecordHistory {
     preferLower: false,
   );
 
-  List<RecordValue> getNewRecords(Score newScore) => [
+  List<RecordValue> getNewRecords(Score newScore, Difficulty difficulty) => [
         if (fastestTime.adopt(newScore.time)) fastestTime,
-        if (mostExcellent.adopt(newScore.excellent)) mostExcellent,
-        if (mostPerfect.adopt(newScore.perfect)) mostPerfect,
-        if (fewestMistakes.adopt(newScore.incorrect)) fewestMistakes,
+        if (difficulty.isCorrect(excellentMatch) &&
+            mostExcellent.adopt(newScore.matchesOfExactType(excellentMatch)))
+          mostExcellent,
+        if (mostSuperb.adopt(newScore.matchesOfExactType(superbMatch)))
+          mostSuperb,
+        if (mostPerfect.adopt(newScore.matchesOfExactType(perfectMatch)))
+          mostPerfect,
+        if (fewestMistakes.adopt(newScore.incorrect(difficulty)))
+          fewestMistakes,
         if (highestAverageMatch.adopt(newScore.averageMatch))
           highestAverageMatch,
       ];
@@ -61,7 +76,7 @@ class RecordValue<T extends Comparable> {
 
   bool adopt(T latest) {
     if (value == null) {
-	  value = latest;
+      value = latest;
       return true;
     }
 

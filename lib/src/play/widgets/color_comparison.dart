@@ -1,19 +1,16 @@
-import 'package:artists_eye/src/play/models/score.dart';
+import 'package:artists_eye/src/challenges/models/challenge.dart';
+import 'package:artists_eye/src/color/models/color_match.dart';
 import 'package:flutter/material.dart';
 
 class ColorComparison extends StatelessWidget {
   const ColorComparison({
-    required this.pickedColor,
-    required this.correctColor,
     required this.match,
-    required this.challengeId,
+    required this.challenge,
     super.key,
   });
 
-  final String challengeId;
-  final double match;
-  final Color pickedColor;
-  final Color correctColor;
+  final Challenge challenge;
+  final ColorMatch match;
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +36,19 @@ class ColorComparison extends StatelessWidget {
               ),
             ),
           ),
-		  Positioned(
-			bottom: 140,
-			left: 0,
-			right: 0,
-			child: Text(
-			  'tap anywhere to continue',
-			  textAlign: TextAlign.center,
-			  style: Theme.of(context)
-				  .textTheme
-				  .bodyLarge!
-				  .copyWith(color: Colors.white),
-			),
-		  ),
+          Positioned(
+            bottom: 140,
+            left: 0,
+            right: 0,
+            child: Text(
+              'tap anywhere to continue',
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Colors.white),
+            ),
+          ),
         ],
       ),
     );
@@ -65,7 +62,7 @@ class ColorComparison extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(1000),
-            color: pickedColor,
+            color: match.pickedColor,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),
@@ -84,7 +81,7 @@ class ColorComparison extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(scoreText(),
+              Text('${scoreText()}!',
                   style: Theme.of(context)
                       .textTheme
                       .displayLarge!
@@ -107,7 +104,7 @@ class ColorComparison extends StatelessWidget {
     final bubble = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(300),
-        color: shadowOnly ? shadowColor : correctColor,
+        color: shadowOnly ? shadowColor : match.targetColor,
         boxShadow: [
           if (shadowOnly)
             BoxShadow(
@@ -128,28 +125,16 @@ class ColorComparison extends StatelessWidget {
       child: shadowOnly
           ? bubble
           : Hero(
-              tag: 'findme$challengeId',
+              tag: 'findme${challenge.id}',
               child: bubble,
             ),
     );
   }
 
-  int get scorePercent => (match * 100).floor();
+  int get scorePercent => (match.percentage * 100).floor();
   String getScoreString() => '$scorePercent% match';
 
-  String scoreText() {
-    if (match >= perfectMatchGTE) {
-      return 'Perfect!';
-    } else if (match >= excellentMatchGTE) {
-      return 'Excellent!';
-    } else if (match > goodMatchGTE) {
-      return 'Good!';
-    } else if (match > 0.8) {
-      return 'Almost!';
-    } else if (match > 0.5) {
-      return 'Not quite!';
-    } else {
-      return 'Try again!';
-    }
-  }
+  String scoreText() => challenge.isCorrect(match.type)
+      ? match.type.scoringString
+      : match.type.mistakeString;
 }

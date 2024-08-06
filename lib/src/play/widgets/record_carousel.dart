@@ -59,17 +59,19 @@ class _RecordCarouselState extends State<RecordCarousel> {
   }
 
   String recordString(RecordValue record) {
-	final val = record.value;
+    final val = record.value;
     switch (record.kind) {
       case RecordKind.fastestTime:
-        final secondsString = ((val as Duration).inMilliseconds / 1000)
-            .toStringAsFixed(2);
+        final secondsString =
+            ((val as Duration).inMilliseconds / 1000).toStringAsFixed(2);
         return '$secondsString seconds';
       case RecordKind.highestAverageMatch:
         final matchString = ((val as double) * 100).round();
         return '$matchString% overall accuracy';
       case RecordKind.mostPerfect:
         return val == 1 ? '$val perfect match' : '$val perfect matches';
+      case RecordKind.mostSuperb:
+        return val == 1 ? '$val superb match' : '$val superb matches';
       case RecordKind.mostExcellent:
         return val == 1 ? '$val excellent match' : '$val excellent matches';
       case RecordKind.fewestMistakes:

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/color/models/cam16.dart';
+import 'package:artists_eye/src/color/models/color_match.dart';
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 import 'package:artists_eye/src/play/routes/final_score.dart';
@@ -64,7 +65,9 @@ class _PlayState extends State<Play> {
     answer = newTest.toFind;
   }
 
-  Widget get heading => score.correct == 0 ? matchTextHeading : progress;
+  Widget get heading => score.correct(widget.challenge.difficulty) == 0
+      ? matchTextHeading
+      : progress;
 
   Widget get matchTextHeading => Text(
         'Match the color:',
@@ -73,7 +76,7 @@ class _PlayState extends State<Play> {
 
   Widget get progress => Progress(
         completed: completed,
-        total: widget.challenge.goal,
+        total: widget.challenge.difficulty.goal,
       );
 
   @override
@@ -110,23 +113,7 @@ class _PlayState extends State<Play> {
             child: PickFromGradient(
               colorLeft: colorLeft,
               colorRight: colorRight,
-              onSelect: (value) {
-                setState(() {
-                  picked = value;
-                  if (score.addMatch(getScore())) {
-                    final pickedColor =
-                        Color.lerp(colorLeft, colorRight, value)!;
-                    final hsv = HSLColor.fromColor(pickedColor);
-                    completed.add(hsv
-                        .withSaturation(hsv.saturation.clamp(0, 0.7))
-                        .toColor());
-                  }
-                });
-                if (widget.challenge.finished(score)) {
-                  score.end();
-                }
-                showComparisonModal();
-              },
+              onSelect: colorSelected,
             ),
           ),
           if (widget.challenge.isWheel)
@@ -148,6 +135,28 @@ class _PlayState extends State<Play> {
     );
   }
 
+  void colorSelected(double value) {
+    setState(() {
+      picked = value;
+
+      final match = getMatch();
+      score.addMatch(match);
+
+      if (widget.challenge.isCorrect(match.type)) {
+        final pickedColor = Color.lerp(colorLeft, colorRight, value)!;
+        final hsv = HSLColor.fromColor(pickedColor);
+        completed
+            .add(hsv.withSaturation(hsv.saturation.clamp(0, 0.7)).toColor());
+      }
+
+      if (widget.challenge.finished(score)) {
+        score.end();
+      }
+
+      showComparisonModal(match);
+    });
+  }
+
   void endPlay() {
     final records = widget.challenge.getNewRecords(score);
     Navigator.of(context).pushReplacement(
@@ -163,7 +172,7 @@ class _PlayState extends State<Play> {
     );
   }
 
-  void showComparisonModal() async {
+  void showComparisonModal(ColorMatch colorMatch) async {
     await Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
@@ -173,10 +182,8 @@ class _PlayState extends State<Play> {
           return FadeTransition(
             opacity: animation,
             child: ColorComparison(
-              pickedColor: Color.lerp(colorLeft, colorRight, picked!)!,
-              correctColor: answer,
-              match: getScore(),
-              challengeId: widget.challenge.id,
+              match: colorMatch,
+              challenge: widget.challenge,
             ),
           );
         },
@@ -214,10 +221,14 @@ class _PlayState extends State<Play> {
     return sqrt(adist * adist + bdist * bdist + ldist * ldist);
   }
 
-  double getScore() {
-    final correctColor = answer;
+  ColorMatch getMatch() {
+    final targetColor = answer;
     final pickedColor = Color.lerp(colorLeft, colorRight, picked!)!;
 
-    return cam16Score(correctColor, pickedColor);
+    return ColorMatch(
+      targetColor: targetColor,
+      pickedColor: pickedColor,
+      percentage: cam16Score(targetColor, pickedColor),
+    );
   }
 }

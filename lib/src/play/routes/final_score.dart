@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/challenges/models/record_history.dart';
+import 'package:artists_eye/src/color/models/match_type.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 import 'package:artists_eye/src/play/routes/play.dart';
 import 'package:artists_eye/src/play/widgets/record_carousel.dart';
@@ -25,6 +26,8 @@ class FinalScore extends StatelessWidget {
   final Score score;
   final List<RecordValue> records;
 
+  int get correct => score.correct(challenge.difficulty);
+  int get mistakes => score.incorrect(challenge.difficulty);
   @override
   Widget build(BuildContext context) {
     return ArtistsEyeScaffold(
@@ -54,28 +57,14 @@ class FinalScore extends StatelessWidget {
                       .displayLarge!
                       .copyWith(color: Colors.white)),
             const SizedBox(height: 16),
-            Text('${score.correct} correct, ${score.incorrect} mistakes',
+            Text('$correct correct, $mistakes mistakes',
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge!
                     .copyWith(color: Colors.white)),
             const SizedBox(height: 12),
-            if (score.perfect > 0) ...[
-              Text('${score.perfect} perfect matches!',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(color: Colors.white)),
-              const SizedBox(height: 12),
-            ],
-            if (score.excellent > 0) ...[
-              Text('${score.excellent} excellent matches!',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(color: Colors.white)),
-              const SizedBox(height: 12),
-            ],
+            for (final matchType in colorMatchTypes)
+              ...matchTypeColumnParts(context, matchType),
             Text('${(score.averageMatch * 100).round()}% overall accuracy',
                 style: Theme.of(context)
                     .textTheme
@@ -127,31 +116,48 @@ class FinalScore extends StatelessWidget {
                 curve: Curves.easeInOutQuart,
                 builder: (context, value, child) {
                   return Transform.translate(
-				    offset: Offset(value, 0),
-					child: child,
-				  );
+                    offset: Offset(value, 0),
+                    child: child,
+                  );
                 },
-				child: ThumbWidget(
-                    color: Colors.grey[200]!,
-                    text: 'Play again',
-                    height: 110,
-                    width: 120,
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => Play(
-                            challenge: challenge,
-                          ),
+                child: ThumbWidget(
+                  color: Colors.grey[200]!,
+                  text: 'Play again',
+                  height: 110,
+                  width: 120,
+                  onTap: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => Play(
+                          challenge: challenge,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> matchTypeColumnParts(BuildContext context, MatchType matchType) {
+    final matchCount = score.matchesOfExactType(matchType);
+
+    if (matchCount == 0 || matchType <= challenge.difficulty.requiredMatch) {
+      return const [];
+    }
+
+    return [
+      Text('$matchCount ${matchType.scoringString} matches!',
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium!
+              .copyWith(color: Colors.white)),
+      const SizedBox(height: 12),
+    ];
   }
 }
 
