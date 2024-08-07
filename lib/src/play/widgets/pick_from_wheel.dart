@@ -1,6 +1,6 @@
 import 'dart:math';
-import 'package:artists_eye/src/color/models/color_effect.dart';
 import 'package:artists_eye/src/color/models/hsv_color_tween.dart';
+import 'package:artists_eye/src/play/widgets/pick_color_button.dart';
 import 'package:flutter/material.dart';
 
 class PickFromWheel extends StatefulWidget {
@@ -22,17 +22,8 @@ class PickFromWheel extends StatefulWidget {
 }
 
 class _PickFromWheelState extends State<PickFromWheel> {
-  double? pickedAngle;
-  double? pickedProgress;
-  Color? pickedColor;
-  Offset? origin;
+  _Selection? picked;
   late HsvColorTween colorTween;
-
-  static const shadowTransform = AddHSL(
-    deltaHue: 120,
-    deltaSaturation: 0.2,
-    deltaLightness: 0.25,
-  );
 
   @override
   void initState() {
@@ -82,50 +73,20 @@ class _PickFromWheelState extends State<PickFromWheel> {
               color: Colors.transparent,
             ),
           ),
-          if (pickedAngle != null)
-            Flow(
-              delegate: _PickedAngleFlowDelegate(
-                pickedAngle: pickedAngle!,
+          if (picked != null)
+            Positioned(
+              left: picked!.buttonOffset.dx - widget.pickerSize / 2,
+              top: picked!.buttonOffset.dy - widget.pickerSize / 2,
+              child: PickColorButton(
+                color: picked!.color,
+                rotation: picked!.angle,
+                onConfirm: () {
+                  widget.onSelect(picked!.color);
+                  setState(() {
+                    picked = null;
+                  });
+                },
               ),
-              children: [
-                Hero(
-                  tag: 'picked',
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: pickedColor!,
-                      borderRadius:
-                          BorderRadius.circular(widget.pickerSize / 2 - 8),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                          color: shadowTransform
-                              .perform(pickedColor!)
-                              .withOpacity(0.75),
-                        ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      width: widget.pickerSize,
-                      height: widget.pickerSize,
-                      child: IconButton(
-                        icon: const Icon(Icons.check_rounded),
-                        color: shadowTransform.perform(pickedColor!),
-                        onPressed: () {
-                          widget.onSelect(pickedColor!);
-                          setState(
-                            () {
-                              pickedAngle = null;
-                              pickedProgress = null;
-                              pickedColor = null;
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
         ],
       ),
@@ -139,38 +100,30 @@ class _PickFromWheelState extends State<PickFromWheel> {
     final relative = offset - center;
     final angle = pi - atan2(relative.dx, relative.dy);
     final shownAngle = pi / 2 + atan((size.height - size.width) / size.width);
+
+    final radius = size.width - 50;
+    final dx = cos(angle - pi / 2) * radius;
+    final dy = sin(angle - pi / 2) * radius;
+    final progress = angle / shownAngle;
+
     setState(() {
-      origin = center;
-      pickedAngle = angle;
-      pickedProgress = angle / shownAngle;
-      pickedColor = colorTween.transform(pickedProgress!).toColor();
+      picked = _Selection(
+        angle: angle,
+        color: colorTween.transform(progress).toColor(),
+        buttonOffset: Offset(dx, dy + size.width),
+      );
     });
   }
 }
 
-class _PickedAngleFlowDelegate extends FlowDelegate {
-  _PickedAngleFlowDelegate({
-    required this.pickedAngle,
+class _Selection {
+  const _Selection({
+    required this.angle,
+    required this.color,
+    required this.buttonOffset,
   });
 
-  final double pickedAngle;
-
-  @override
-  void paintChildren(FlowPaintingContext context) {
-    final squareSize = context.getChildSize(0)!;
-    //final checkSize = context.getChildSize(1);
-    final size = context.size;
-
-    context.paintChild(0,
-        transform: Matrix4.identity()
-          ..translate(0.0, size.width)
-          ..rotateZ(pickedAngle)
-          ..translate(-squareSize.width / 2, -squareSize.height / 2)
-          ..translate(0.0, -size.width + 50));
-  }
-
-  @override
-  bool shouldRepaint(covariant FlowDelegate oldDelegate) {
-    return true;
-  }
+  final double angle;
+  final Color color;
+  final Offset buttonOffset;
 }

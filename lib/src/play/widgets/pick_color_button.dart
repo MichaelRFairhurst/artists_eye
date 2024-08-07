@@ -28,25 +28,31 @@ class PickColorButton extends StatelessWidget {
     final shadowColor = shadowTransform.perform(color);
     return Hero(
       tag: 'picked',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              spreadRadius: 2,
-              color: shadowColor.withOpacity(0.75),
+      child: Transform.rotate(
+        angle: rotation,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                spreadRadius: 2,
+                color: shadowColor.withOpacity(0.75),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Transform.rotate(
+              angle: -rotation,
+              child: IconButton(
+                icon: const Icon(Icons.check_rounded),
+                color: shadowColor,
+                onPressed: onConfirm,
+              ),
             ),
-          ],
-        ),
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: IconButton(
-            icon: const Icon(Icons.check_rounded),
-            color: shadowColor,
-            onPressed: onConfirm,
           ),
         ),
       ),
