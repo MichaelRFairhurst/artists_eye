@@ -1,5 +1,4 @@
 import 'package:artists_eye/src/color/models/color_effect.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class PickFromGradient extends StatefulWidget {
@@ -11,7 +10,7 @@ class PickFromGradient extends StatefulWidget {
     super.key,
   });
 
-  final void Function(double) onSelect;
+  final void Function(Color) onSelect;
   final Color colorLeft;
   final Color colorRight;
   final double pickerSize;
@@ -67,8 +66,7 @@ class _PickFromGradientState extends State<PickFromGradient> {
                 tag: 'picked',
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Color.lerp(
-                        widget.colorLeft, widget.colorRight, pickedProgress!),
+                    color: pickedColor(),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.0),
                       width: 4.0,
@@ -92,7 +90,8 @@ class _PickFromGradientState extends State<PickFromGradient> {
                       icon: const Icon(Icons.check_rounded),
                       color: shadowTransform.perform(pickedColor()),
                       onPressed: () {
-                        widget.onSelect(pickedProgress!);
+                        widget.onSelect(pickedColor());
+
                         setState(
                           () {
                             picked = null;

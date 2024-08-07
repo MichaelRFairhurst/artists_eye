@@ -9,6 +9,7 @@ import 'package:artists_eye/src/play/routes/final_score.dart';
 import 'package:artists_eye/src/play/widgets/color_comparison.dart';
 import 'package:artists_eye/src/play/widgets/mistakes_widget.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
+import 'package:artists_eye/src/play/widgets/pick_from_wheel.dart';
 import 'package:artists_eye/src/play/widgets/progress.dart';
 import 'package:artists_eye/src/play/widgets/timer.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
@@ -41,7 +42,7 @@ class _PlayState extends State<Play> {
   late Color colorLeft;
   late Color colorRight;
   late Color answer;
-  double? picked;
+  Color? picked;
 
   final random = Random();
 
@@ -117,7 +118,7 @@ class _PlayState extends State<Play> {
               onSelect: colorSelected,
             ),
           ),
-          if (widget.challenge.isWheel)
+          if (widget.challenge.isWheel) ...[
             Positioned.fill(
 			  top: 32,
               child: FadeIn(
@@ -127,6 +128,15 @@ class _PlayState extends State<Play> {
 				),
               ),
             ),
+			Positioned.fill(
+			  top: 32,
+			  child: PickFromWheel(
+				colorLeft: colorLeft,
+				colorRight: colorRight,
+				onSelect: colorSelected,
+			  ),
+			),
+		  ],
           Positioned(
             bottom: 36,
             left: 36,
@@ -140,7 +150,7 @@ class _PlayState extends State<Play> {
     );
   }
 
-  void colorSelected(double value) {
+  void colorSelected(Color value) {
     setState(() {
       picked = value;
 
@@ -148,8 +158,7 @@ class _PlayState extends State<Play> {
       score.addMatch(match);
 
       if (widget.challenge.isCorrect(match.type)) {
-        final pickedColor = Color.lerp(colorLeft, colorRight, value)!;
-        final hsv = HSLColor.fromColor(pickedColor);
+        final hsv = HSLColor.fromColor(picked!);
         completed
             .add(hsv.withSaturation(hsv.saturation.clamp(0, 0.7)).toColor());
       }
@@ -237,13 +246,10 @@ class _PlayState extends State<Play> {
   }
 
   ColorMatch getMatch() {
-    final targetColor = answer;
-    final pickedColor = Color.lerp(colorLeft, colorRight, picked!)!;
-
     return ColorMatch(
-      targetColor: targetColor,
-      pickedColor: pickedColor,
-      percentage: cam16Score(targetColor, pickedColor),
+      targetColor: answer,
+      pickedColor: picked!,
+      percentage: cam16Score(answer, picked!),
     );
   }
 }

@@ -10,7 +10,6 @@ class HsvColorTween extends Tween<HSLColor> {
   });
 
   double _lerpHue(double t) {
-    this.hashCode;
     if (reverseHue) {
       return lerpDouble(begin!.hue + 360, end!.hue, t)! % 360;
     } else {
