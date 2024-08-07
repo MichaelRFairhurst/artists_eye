@@ -14,6 +14,8 @@ class Challenge {
     required this.id,
     required this.difficulty,
     required this.makeColorTest,
+	required this.prompt,
+	required this.thumbtext,
     this.isWheel = false,
     this.selectedColorEffect = ColorEffect.none,
   }) : recordHistory = RecordHistory(
@@ -22,6 +24,8 @@ class Challenge {
 
   final String name;
   final String id;
+  final String prompt;
+  final String thumbtext;
   final bool isWheel;
   final Difficulty difficulty;
   final RecordHistory recordHistory;
@@ -42,7 +46,7 @@ class Challenge {
     return recordHistory.getNewRecords(newScore, difficulty);
   }
 
-  static ColorTest matchBrightness() {
+  static GradientColorTest matchBrightness() {
     final random = Random();
 
     final rgb = Color.fromARGB(
@@ -53,7 +57,7 @@ class Challenge {
     );
 
     final hsv = HSVColor.fromColor(rgb);
-    return ColorTest(
+    return GradientColorTest(
       colorLeft: hsv.withValue(0).toColor(),
       colorRight: hsv.withValue(1).toColor(),
       toFind: rgb,
@@ -61,7 +65,7 @@ class Challenge {
     );
   }
 
-  static ColorTest matchSaturation() {
+  static GradientColorTest matchSaturation() {
     final random = Random();
 
     final rgb = Color.fromARGB(
@@ -72,7 +76,7 @@ class Challenge {
     );
 
     final hsv = HSVColor.fromColor(rgb);
-    return ColorTest(
+    return GradientColorTest(
       colorLeft: hsv.withSaturation(0).toColor(),
       colorRight: hsv.withSaturation(1).toColor(),
       toFind: rgb,
@@ -80,7 +84,7 @@ class Challenge {
     );
   }
 
-  static ColorTest matchColor() {
+  static GradientColorTest matchColor() {
     final random = Random();
 
     final rgb = Color.fromARGB(
@@ -91,7 +95,7 @@ class Challenge {
     );
 
     final hsv = HSVColor.fromColor(rgb);
-    return ColorTest(
+    return GradientColorTest(
       colorLeft:
           hsv.withHue((hsv.hue + random.nextDouble() * 60) % 360).toColor(),
       colorRight:
@@ -99,6 +103,30 @@ class Challenge {
       toFind: rgb,
 	  hintColor: rgb,
     );
+  }
+
+  static ColorTest matchColorComplimentIntro() {
+	final random = Random();
+	const count = 3;
+	final index = random.nextInt(primary6.length);
+	final offset = -random.nextInt(count - 1);
+
+	const desaturate = AddHSL(
+	  deltaSaturation: -0.7,
+	  deltaLightness: 0.05,
+	);
+
+    return MultiSelectColorTest(
+	  toFind: desaturate.perform(primary6[index].color),
+	  hintColor: desaturate.perform(primary6[(index + 3) % 6].color),
+	  options: [
+	    for (var i = 0; i < count; ++i)
+		  ColorOption(
+		    color: desaturate.perform(primary6[(i + index + offset) % 6].color),
+			colorName: primary6[(i + index + offset) % 6].colorName,
+		  ),
+	  ]
+	);
   }
 
   static ColorTest matchColorComplimentEasy() {
@@ -112,7 +140,7 @@ class Challenge {
 	);
   }
 
-  static ColorTest matchColorComplimentHard() {
+  static GradientColorTest matchColorComplimentHard() {
 	final matchColorTest = matchColor();
 	const addHue = AddHSL(
 	  deltaHue: 180,

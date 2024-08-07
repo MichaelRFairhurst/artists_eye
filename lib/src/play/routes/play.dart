@@ -10,6 +10,7 @@ import 'package:artists_eye/src/play/widgets/color_comparison.dart';
 import 'package:artists_eye/src/play/widgets/mistakes_widget.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_gradient.dart';
 import 'package:artists_eye/src/play/widgets/pick_from_wheel.dart';
+import 'package:artists_eye/src/play/widgets/pick_with_vocab.dart';
 import 'package:artists_eye/src/play/widgets/progress.dart';
 import 'package:artists_eye/src/play/widgets/timer.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
@@ -63,7 +64,7 @@ class _PlayState extends State<Play> {
       : progress;
 
   Widget get matchTextHeading => Text(
-        'Match the color:',
+        widget.challenge.prompt,
         style: Theme.of(context).textTheme.titleLarge,
       );
 
@@ -72,11 +73,84 @@ class _PlayState extends State<Play> {
         total: widget.challenge.difficulty.goal,
       );
 
+  Widget primaryAreaGradient() {
+    final colorTest = this.colorTest;
+
+    return Positioned.fill(
+      child: PrimaryAreaGradient(
+        heroTag: 'gradient${widget.challenge.id}',
+        colorLeft: colorTest is GradientColorTest
+            ? colorTest.colorLeft
+            : Colors.grey[200]!,
+        colorRight: colorTest is GradientColorTest
+            ? colorTest.colorRight
+            : Colors.grey[100]!,
+      ),
+    );
+  }
+
+  Widget overPrimaryArea() {
+    final colorTest = this.colorTest;
+
+    if (colorTest is GradientColorTest && widget.challenge.isWheel) {
+      return Positioned.fill(
+        top: 32,
+        child: FadeIn(
+          child: ColorWheel(
+            colorLeft: colorTest.colorLeft,
+            colorRight: colorTest.colorRight,
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox();
+  }
+
+  Widget colorPickerWidget() {
+    final colorTest = this.colorTest;
+    if (colorTest is GradientColorTest) {
+      if (widget.challenge.isWheel) {
+        return Positioned.fill(
+          top: 32,
+          child: PickFromWheel(
+            colorLeft: colorTest.colorLeft,
+            colorRight: colorTest.colorRight,
+            pickedColorEffect: widget.challenge.selectedColorEffect,
+            onSelect: colorSelected,
+          ),
+        );
+      } else {
+        return Positioned.fill(
+          child: PickFromGradient(
+            colorLeft: colorTest.colorLeft,
+            colorRight: colorTest.colorRight,
+            onSelect: colorSelected,
+          ),
+        );
+      }
+    }
+
+    if (colorTest is MultiSelectColorTest) {
+      return Positioned.fill(
+        top: 32,
+        child: FadeIn(
+          child: PickWithVocab(
+            options: colorTest.options,
+			onSelect: colorSelected,
+          ),
+        ),
+      );
+    }
+
+    throw 'unreachable!';
+  }
+
   @override
   Widget build(BuildContext context) {
     return ArtistsEyeScaffold(
       thumb: ThumbWidget(
-        text: 'Find me!',
+        text: widget.challenge.thumbtext,
         heroTag: 'findme${widget.challenge.id}',
         color: colorTest.hintColor,
       ),
@@ -95,44 +169,9 @@ class _PlayState extends State<Play> {
       primaryAreaGradient: Stack(
         alignment: Alignment.topCenter,
         children: [
-          Positioned.fill(
-            child: PrimaryAreaGradient(
-              heroTag: 'gradient${widget.challenge.id}',
-              colorLeft: widget.challenge.isWheel
-                  ? Colors.grey[200]!
-                  : colorTest.colorLeft,
-              colorRight: widget.challenge.isWheel
-                  ? Colors.grey[100]!
-                  : colorTest.colorRight,
-            ),
-          ),
-          Positioned.fill(
-            child: PickFromGradient(
-              colorLeft: colorTest.colorLeft,
-              colorRight: colorTest.colorRight,
-              onSelect: colorSelected,
-            ),
-          ),
-          if (widget.challenge.isWheel) ...[
-            Positioned.fill(
-              top: 32,
-              child: FadeIn(
-                child: ColorWheel(
-                  colorLeft: colorTest.colorLeft,
-                  colorRight: colorTest.colorRight,
-                ),
-              ),
-            ),
-            Positioned.fill(
-              top: 32,
-              child: PickFromWheel(
-                colorLeft: colorTest.colorLeft,
-                colorRight: colorTest.colorRight,
-				pickedColorEffect: widget.challenge.selectedColorEffect,
-                onSelect: colorSelected,
-              ),
-            ),
-          ],
+          primaryAreaGradient(),
+          overPrimaryArea(),
+          colorPickerWidget(),
           Positioned(
             bottom: 36,
             left: 36,

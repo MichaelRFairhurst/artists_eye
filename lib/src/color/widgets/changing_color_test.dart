@@ -30,12 +30,18 @@ class ColorTestTween extends Tween<ColorTest> {
 
   @override
   ColorTest lerp(double t) {
-    return ColorTest(
-      colorLeft: Color.lerp(begin!.colorLeft, end!.colorLeft, t)!,
-      colorRight: Color.lerp(begin!.colorRight, end!.colorRight, t)!,
-      hintColor: Color.lerp(begin!.hintColor, end!.hintColor, t)!,
-      toFind: Color.lerp(begin!.toFind, end!.toFind, t)!,
-    );
+    final begin = this.begin;
+    final end = this.end;
+    if (begin is GradientColorTest && end is GradientColorTest) {
+      return GradientColorTest(
+        colorLeft: Color.lerp(begin.colorLeft, end.colorLeft, t)!,
+        colorRight: Color.lerp(begin.colorRight, end.colorRight, t)!,
+        hintColor: Color.lerp(begin.hintColor, end.hintColor, t)!,
+        toFind: Color.lerp(begin.toFind, end.toFind, t)!,
+      );
+    }
+
+    return begin!;
   }
 }
 

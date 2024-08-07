@@ -37,8 +37,8 @@ class ChallengeTile extends StatelessWidget {
       child: ChangingColorTest(
         makeColorTest: challenge.makeColorTest,
         builder: (context, colorTest, _) {
-          final colorLeft = colorTest.colorLeft;
-          final colorRight = colorTest.colorRight;
+          final colorLeft = colorTest.tileGradientLeft;
+          final colorRight = colorTest.tileGradientRight;
           return GradientToPrimaryArea(
             heroTag: 'gradient${challenge.id}',
             colorLeft: colorLeft,
