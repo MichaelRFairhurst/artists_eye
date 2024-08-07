@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:artists_eye/src/challenges/models/challenge.dart';
-import 'package:artists_eye/src/color/models/cam16.dart';
 import 'package:artists_eye/src/color/models/color_match.dart';
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
 import 'package:artists_eye/src/play/models/score.dart';
@@ -18,6 +17,7 @@ import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
 import 'package:artists_eye/src/util/widgets/fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_color_models/flutter_color_models.dart';
+import 'package:material_color_utilities/material_color_utilities.dart' show Cam16, Hct;
 
 class Play extends StatefulWidget {
   const Play({
@@ -224,10 +224,24 @@ class _PlayState extends State<Play> {
   }
 
   double cam16Score(Color a, Color b) {
-    final dist = Cam16Color.fromXYZ(XyzColor.fromColor(a))
-        .distanceTo(Cam16Color.fromXYZ(XyzColor.fromColor(b)));
+	final cam16a = Cam16.fromInt(a.toRgbColor().value);
+	final cam16b = Cam16.fromInt(b.toRgbColor().value);
+	final dist = cam16a.distance(cam16b);
 
-    return (1 - dist / 200).clamp(0.0, 1.0);
+    return (1 - dist / 100).clamp(0.0, 1.0);
+  }
+
+  double hctScore(Color a, Color b) {
+	final hcta = Hct.fromInt(a.toRgbColor().value);
+	final hctb = Hct.fromInt(b.toRgbColor().value);
+
+    final hdist = hcta.hue - hctb.hue;
+    final cdist = hcta.chroma - hctb.chroma;
+    final tdist = hcta.tone - hctb.tone;
+
+	final dist = sqrt(hdist * hdist + cdist * cdist + tdist * tdist);
+
+    return (1 - dist / 75).clamp(0.0, 1.0);
   }
 
   double labScore(Color a, Color b) {
@@ -249,7 +263,8 @@ class _PlayState extends State<Play> {
     return ColorMatch(
       targetColor: answer,
       pickedColor: picked!,
-      percentage: cam16Score(answer, picked!),
+      //percentage: cam16Score(answer, picked!),
+      percentage: hctScore(answer, picked!),
     );
   }
 }
