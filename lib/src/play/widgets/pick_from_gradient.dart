@@ -1,4 +1,4 @@
-import 'package:artists_eye/src/color/models/color_effect.dart';
+import 'package:artists_eye/src/play/widgets/pick_color_button.dart';
 import 'package:flutter/material.dart';
 
 class PickFromGradient extends StatefulWidget {
@@ -22,12 +22,6 @@ class PickFromGradient extends StatefulWidget {
 class _PickFromGradientState extends State<PickFromGradient> {
   Offset? picked;
   double? pickedProgress;
-
-  static const shadowTransform = AddHSL(
-    deltaHue: 120,
-    deltaSaturation: 0.2,
-    deltaLightness: 0.25,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -62,46 +56,17 @@ class _PickFromGradientState extends State<PickFromGradient> {
             Positioned(
               left: picked!.dx - widget.pickerSize / 2,
               top: picked!.dy - widget.pickerSize / 2,
-              child: Hero(
-                tag: 'picked',
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: pickedColor(),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.0),
-                      width: 4.0,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(widget.pickerSize / 2 - 8),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                        color: shadowTransform
-                            .perform(pickedColor())
-                            .withOpacity(0.75),
-                      ),
-                    ],
-                  ),
-                  child: SizedBox(
-                    width: widget.pickerSize,
-                    height: widget.pickerSize,
-                    child: IconButton(
-                      icon: const Icon(Icons.check_rounded),
-                      color: shadowTransform.perform(pickedColor()),
-                      onPressed: () {
-                        widget.onSelect(pickedColor());
+              child: PickColorButton(
+                color: pickedColor(),
+                size: widget.pickerSize,
+                onConfirm: () {
+                  widget.onSelect(pickedColor());
 
-                        setState(
-                          () {
-                            picked = null;
-                            pickedProgress = null;
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                  setState(() {
+                    picked = null;
+                    pickedProgress = null;
+                  });
+                },
               ),
             ),
         ],
