@@ -106,8 +106,8 @@ class _PlayState extends State<Play> {
           Positioned.fill(
             child: PrimaryAreaGradient(
               heroTag: 'gradient${widget.challenge.id}',
-              colorLeft: colorLeft,
-              colorRight: colorRight,
+              colorLeft: widget.challenge.isWheel ? Colors.grey[200]! : colorLeft,
+              colorRight: widget.challenge.isWheel ? Colors.grey[100]! : colorRight,
             ),
           ),
           Positioned.fill(
@@ -118,9 +118,13 @@ class _PlayState extends State<Play> {
             ),
           ),
           if (widget.challenge.isWheel)
-            const Positioned.fill(
+            Positioned.fill(
+			  top: 32,
               child: FadeIn(
-                child: ColorWheel(),
+                child: ColorWheel(
+				  colorLeft: colorLeft,
+				  colorRight: colorRight,
+				),
               ),
             ),
           Positioned(

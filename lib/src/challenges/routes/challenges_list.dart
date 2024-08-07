@@ -24,6 +24,7 @@ class ChallengesList extends StatelessWidget {
               difficulty: easy,
               id: 'color',
               name: 'Match Color Tone',
+              isWheel: true,
               makeColorTest: Challenge.matchColor,
             ),
             Challenge(
