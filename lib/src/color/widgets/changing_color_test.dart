@@ -33,6 +33,7 @@ class ColorTestTween extends Tween<ColorTest> {
     return ColorTest(
       colorLeft: Color.lerp(begin!.colorLeft, end!.colorLeft, t)!,
       colorRight: Color.lerp(begin!.colorRight, end!.colorRight, t)!,
+      hintColor: Color.lerp(begin!.hintColor, end!.hintColor, t)!,
       toFind: Color.lerp(begin!.toFind, end!.toFind, t)!,
     );
   }

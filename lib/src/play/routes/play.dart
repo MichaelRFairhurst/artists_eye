@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/color/models/color_match.dart';
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
+import 'package:artists_eye/src/play/models/color_test.dart';
 import 'package:artists_eye/src/play/models/score.dart';
 import 'package:artists_eye/src/play/routes/final_score.dart';
 import 'package:artists_eye/src/play/widgets/color_comparison.dart';
@@ -17,19 +18,18 @@ import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
 import 'package:artists_eye/src/util/widgets/fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_color_models/flutter_color_models.dart';
-import 'package:material_color_utilities/material_color_utilities.dart' show Cam16, Hct;
+import 'package:material_color_utilities/material_color_utilities.dart'
+    show Cam16, Hct;
 
 class Play extends StatefulWidget {
   const Play({
     required this.challenge,
-    this.colorLeft,
-    this.colorRight,
+    this.startingColorTest,
     super.key,
   });
 
   final Challenge challenge;
-  final Color? colorLeft;
-  final Color? colorRight;
+  final ColorTest? startingColorTest;
 
   @override
   State<Play> createState() => _PlayState();
@@ -39,9 +39,7 @@ class _PlayState extends State<Play> {
   final score = Score();
   final completed = <Color>[];
 
-  late Color colorLeft;
-  late Color colorRight;
-  late Color answer;
+  late ColorTest colorTest;
   Color? picked;
 
   final random = Random();
@@ -51,20 +49,13 @@ class _PlayState extends State<Play> {
     super.initState();
     score.start();
 
-    if (widget.colorLeft != null && widget.colorRight != null) {
-      colorLeft = widget.colorLeft!;
-      colorRight = widget.colorRight!;
-      answer = Color.lerp(colorLeft, colorRight, random.nextDouble())!;
-    } else {
-      newPuzzle();
-    }
+    colorTest = widget.startingColorTest ?? widget.challenge.makeColorTest();
   }
 
-  void newPuzzle() {
-    final newTest = widget.challenge.makeColorTest();
-    colorLeft = newTest.colorLeft;
-    colorRight = newTest.colorRight;
-    answer = newTest.toFind;
+  void setNewColorTest() {
+    setState(() {
+      colorTest = widget.challenge.makeColorTest();
+    });
   }
 
   Widget get heading => score.correct(widget.challenge.difficulty) == 0
@@ -87,7 +78,7 @@ class _PlayState extends State<Play> {
       thumb: ThumbWidget(
         text: 'Find me!',
         heroTag: 'findme${widget.challenge.id}',
-        color: answer,
+        color: colorTest.hintColor,
       ),
       background: Container(color: Colors.white),
       body: Column(
@@ -107,36 +98,41 @@ class _PlayState extends State<Play> {
           Positioned.fill(
             child: PrimaryAreaGradient(
               heroTag: 'gradient${widget.challenge.id}',
-              colorLeft: widget.challenge.isWheel ? Colors.grey[200]! : colorLeft,
-              colorRight: widget.challenge.isWheel ? Colors.grey[100]! : colorRight,
+              colorLeft: widget.challenge.isWheel
+                  ? Colors.grey[200]!
+                  : colorTest.colorLeft,
+              colorRight: widget.challenge.isWheel
+                  ? Colors.grey[100]!
+                  : colorTest.colorRight,
             ),
           ),
           Positioned.fill(
             child: PickFromGradient(
-              colorLeft: colorLeft,
-              colorRight: colorRight,
+              colorLeft: colorTest.colorLeft,
+              colorRight: colorTest.colorRight,
               onSelect: colorSelected,
             ),
           ),
           if (widget.challenge.isWheel) ...[
             Positioned.fill(
-			  top: 32,
+              top: 32,
               child: FadeIn(
                 child: ColorWheel(
-				  colorLeft: colorLeft,
-				  colorRight: colorRight,
-				),
+                  colorLeft: colorTest.colorLeft,
+                  colorRight: colorTest.colorRight,
+                ),
               ),
             ),
-			Positioned.fill(
-			  top: 32,
-			  child: PickFromWheel(
-				colorLeft: colorLeft,
-				colorRight: colorRight,
-				onSelect: colorSelected,
-			  ),
-			),
-		  ],
+            Positioned.fill(
+              top: 32,
+              child: PickFromWheel(
+                colorLeft: colorTest.colorLeft,
+                colorRight: colorTest.colorRight,
+				pickedColorEffect: widget.challenge.selectedColorEffect,
+                onSelect: colorSelected,
+              ),
+            ),
+          ],
           Positioned(
             bottom: 36,
             left: 36,
@@ -217,29 +213,27 @@ class _PlayState extends State<Play> {
     if (widget.challenge.finished(score)) {
       endPlay();
     } else {
-      setState(() {
-        newPuzzle();
-      });
+      setNewColorTest();
     }
   }
 
   double cam16Score(Color a, Color b) {
-	final cam16a = Cam16.fromInt(a.toRgbColor().value);
-	final cam16b = Cam16.fromInt(b.toRgbColor().value);
-	final dist = cam16a.distance(cam16b);
+    final cam16a = Cam16.fromInt(a.toRgbColor().value);
+    final cam16b = Cam16.fromInt(b.toRgbColor().value);
+    final dist = cam16a.distance(cam16b);
 
     return (1 - dist / 100).clamp(0.0, 1.0);
   }
 
   double hctScore(Color a, Color b) {
-	final hcta = Hct.fromInt(a.toRgbColor().value);
-	final hctb = Hct.fromInt(b.toRgbColor().value);
+    final hcta = Hct.fromInt(a.toRgbColor().value);
+    final hctb = Hct.fromInt(b.toRgbColor().value);
 
     final hdist = hcta.hue - hctb.hue;
     final cdist = hcta.chroma - hctb.chroma;
     final tdist = hcta.tone - hctb.tone;
 
-	final dist = sqrt(hdist * hdist + cdist * cdist + tdist * tdist);
+    final dist = sqrt(hdist * hdist + cdist * cdist + tdist * tdist);
 
     return (1 - dist / 75).clamp(0.0, 1.0);
   }
@@ -261,10 +255,10 @@ class _PlayState extends State<Play> {
 
   ColorMatch getMatch() {
     return ColorMatch(
-      targetColor: answer,
+      targetColor: colorTest.toFind,
       pickedColor: picked!,
       //percentage: cam16Score(answer, picked!),
-      percentage: hctScore(answer, picked!),
+      percentage: hctScore(colorTest.toFind, picked!),
     );
   }
 }

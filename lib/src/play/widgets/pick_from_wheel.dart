@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:artists_eye/src/color/models/color_effect.dart';
 import 'package:artists_eye/src/color/models/hsv_color_tween.dart';
 import 'package:artists_eye/src/play/widgets/pick_color_button.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ class PickFromWheel extends StatefulWidget {
     required this.colorRight,
     required this.onSelect,
     this.pickerSize = 64,
+    this.pickedColorEffect = ColorEffect.none,
     super.key,
   });
 
@@ -16,6 +18,7 @@ class PickFromWheel extends StatefulWidget {
   final Color colorLeft;
   final Color colorRight;
   final double pickerSize;
+  final ColorEffect pickedColorEffect;
 
   @override
   State<PickFromWheel> createState() => _PickFromWheelState();
@@ -109,7 +112,8 @@ class _PickFromWheelState extends State<PickFromWheel> {
     setState(() {
       picked = _Selection(
         angle: angle,
-        color: colorTween.transform(progress).toColor(),
+        color: widget.pickedColorEffect
+            .perform(colorTween.transform(progress).toColor()),
         buttonOffset: Offset(dx, dy + size.width),
       );
     });

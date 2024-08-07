@@ -1,10 +1,10 @@
 import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/color/widgets/changing_color_test.dart';
+import 'package:artists_eye/src/play/models/color_test.dart';
 import 'package:artists_eye/src/play/routes/play.dart';
 import 'package:artists_eye/src/scaffold/widgets/gradient_to_primary_area.dart';
 import 'package:artists_eye/src/scaffold/widgets/to_thumb_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:artists_eye/src/util/widgets/changing_color.dart';
 
 class ChallengeTile extends StatelessWidget {
   const ChallengeTile({
@@ -14,7 +14,7 @@ class ChallengeTile extends StatelessWidget {
 
   final Challenge challenge;
 
-  void onTap(BuildContext context, Color colorLeft, Color colorRight) {
+  void onTap(BuildContext context, ColorTest colorTest) {
     Navigator.push(
       context,
       PageRouteBuilder(
@@ -24,8 +24,7 @@ class ChallengeTile extends StatelessWidget {
             FadeTransition(opacity: a, child: child),
         pageBuilder: (_, __, ___) => Play(
           challenge: challenge,
-          colorLeft: colorLeft,
-          colorRight: colorRight,
+		  startingColorTest: colorTest,
         ),
       ),
     );
@@ -43,9 +42,9 @@ class ChallengeTile extends StatelessWidget {
           return GradientToPrimaryArea(
             heroTag: 'gradient${challenge.id}',
             colorLeft: colorLeft,
-            colorRight: challenge.rightColorPreviewEffect.perform(colorRight),
+            colorRight: colorRight,
             onTap: () {
-              onTap(context, colorLeft, colorRight);
+              onTap(context, colorTest);
             },
             child: Row(
               children: [
@@ -53,8 +52,7 @@ class ChallengeTile extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   child: ToThumbWidget(
                     heroTag: 'findme${challenge.id}',
-                    color: challenge.tilePreviewEffect
-                        .perform(Color.lerp(colorLeft, colorRight, 0.6)!),
+                    color: colorTest.hintColor,
                   ),
                 ),
                 const SizedBox(width: 24),

@@ -15,8 +15,7 @@ class Challenge {
     required this.difficulty,
     required this.makeColorTest,
     this.isWheel = false,
-    this.tilePreviewEffect = ColorEffect.none,
-    this.rightColorPreviewEffect = ColorEffect.none,
+    this.selectedColorEffect = ColorEffect.none,
   }) : recordHistory = RecordHistory(
           mistakesAllowed: difficulty.allowedMistakes,
         );
@@ -28,8 +27,7 @@ class Challenge {
   final RecordHistory recordHistory;
   final ColorTest Function() makeColorTest;
 
-  final ColorEffect tilePreviewEffect;
-  final ColorEffect rightColorPreviewEffect;
+  final ColorEffect selectedColorEffect;
 
   bool isWin(Score score) => difficulty.isWin(score);
 
@@ -59,6 +57,7 @@ class Challenge {
       colorLeft: hsv.withValue(0).toColor(),
       colorRight: hsv.withValue(1).toColor(),
       toFind: rgb,
+	  hintColor: rgb,
     );
   }
 
@@ -77,6 +76,7 @@ class Challenge {
       colorLeft: hsv.withSaturation(0).toColor(),
       colorRight: hsv.withSaturation(1).toColor(),
       toFind: rgb,
+	  hintColor: rgb,
     );
   }
 
@@ -97,6 +97,28 @@ class Challenge {
       colorRight:
           hsv.withHue((hsv.hue - random.nextDouble() * 60) % 360).toColor(),
       toFind: rgb,
+	  hintColor: rgb,
     );
+  }
+
+  static ColorTest matchColorComplimentEasy() {
+	final matchColorTest = matchColor();
+	const addHue = AddHSL(
+	  deltaHue: 180,
+	);
+	return matchColorTest.copyWith(
+	  colorLeft: addHue.perform(matchColorTest.colorLeft),
+	  colorRight: addHue.perform(matchColorTest.colorRight),
+	);
+  }
+
+  static ColorTest matchColorComplimentHard() {
+	final matchColorTest = matchColor();
+	const addHue = AddHSL(
+	  deltaHue: 180,
+	);
+	return matchColorTest.copyWith(
+	  hintColor: addHue.perform(matchColorTest.hintColor),
+	);
   }
 }

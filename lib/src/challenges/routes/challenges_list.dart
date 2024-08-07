@@ -1,6 +1,7 @@
 import 'package:artists_eye/src/challenges/models/challenge.dart';
 import 'package:artists_eye/src/challenges/models/difficulty.dart';
 import 'package:artists_eye/src/challenges/widgets/challenge_tile.dart';
+import 'package:artists_eye/src/color/models/color_effect.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
 import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,14 @@ class ChallengesList extends StatelessWidget {
               makeColorTest: Challenge.matchSaturation,
             ),
             Challenge(
+              difficulty: easy,
+              id: 'compliment',
+              name: 'Match Compliment',
+              isWheel: true,
+              makeColorTest: Challenge.matchColorComplimentEasy,
+			  selectedColorEffect: const AddHSL(deltaHue: 180),
+            ),
+            Challenge(
               difficulty: medium,
               id: 'brightness2',
               name: 'Match Lightness II',
@@ -50,6 +59,13 @@ class ChallengesList extends StatelessWidget {
               id: 'saturation2',
               name: 'Match Intensity II',
               makeColorTest: Challenge.matchSaturation,
+            ),
+            Challenge(
+              difficulty: easy,
+              id: 'compliment2',
+              name: 'Match Compliment II',
+              isWheel: true,
+              makeColorTest: Challenge.matchColorComplimentHard,
             ),
           ].map((challenge) => ChallengeTile(challenge: challenge)),
         ],
