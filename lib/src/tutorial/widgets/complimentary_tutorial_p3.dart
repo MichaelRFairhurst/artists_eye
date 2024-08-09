@@ -1,80 +1,54 @@
 import 'package:artists_eye/src/color/models/primary.dart';
-import 'package:artists_eye/src/util/widgets/fade_in.dart';
+import 'package:artists_eye/src/tutorial/widgets/tutorial_circle.dart';
+import 'package:artists_eye/src/tutorial/widgets/tutorial_page_body.dart';
 import 'package:flutter/material.dart';
-
-const circleSize = 52.0;
 
 class ComplimentaryTutorialP3 extends StatelessWidget {
   const ComplimentaryTutorialP3({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Colors on opposite sides of the color wheel are called "complimentary'
-          ' colors."',
-          style: Theme.of(context).textTheme.titleLarge,
+    return TutorialPageBody(
+      parts: [
+        const Text(
+          'Colors on opposite sides of the color wheel are called'
+          ' "complimentary colors."',
         ),
-        const SizedBox(height: 24),
-        Text(
-          'Complimentary colors have many useful properties. For example, they'
-          ' always add up to grey:',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 24),
-        complimentRow(context, softRed, softCyan),
-        const SizedBox(height: 6),
-        complimentRow(context, softGreen, softMagenta),
-        const SizedBox(height: 6),
-        complimentRow(context, softBlue, softYellow),
-        const SizedBox(height: 24),
-        FadeIn(
-          delay: const Duration(seconds: 3),
-          child: Text(
-            'Memorize these three pairs and then practice them in this'
-            ' introductory challenge!',
-            style: Theme.of(context).textTheme.titleLarge,
+        ShowImmediately(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              complimentRow(context, softRed, 'red', softCyan, 'cyan'),
+              const SizedBox(height: 12),
+              complimentRow(
+                  context, softGreen, 'green', softMagenta, 'magenta'),
+              const SizedBox(height: 12),
+              complimentRow(context, softBlue, 'blue', softYellow, 'yellow'),
+            ],
           ),
         ),
-        const Spacer(),
-        Align(
-          alignment: Alignment.bottomRight,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacementNamed('p1');
-            },
-            child: const Text('next'),
-          ),
+        const Text(
+          'These colors have many useful properties. For example,'
+          ' they always add up to grey.',
         ),
+        const Text('Memorize these three pairs and then practice them here!'),
       ],
     );
   }
 
-  Widget complimentRow(BuildContext context, Color color1, Color color2) => Row(
+  Widget complimentRow(
+    BuildContext context,
+    Color color1,
+    String color1str,
+    Color color2,
+    String color2str,
+  ) =>
+      Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          heroCircle(color1),
-          Text('+', style: Theme.of(context).textTheme.titleLarge),
-          heroCircle(color2),
-          Text('=', style: Theme.of(context).textTheme.titleLarge),
-          circle(Colors.grey),
+          TutorialCircle(color1, text: color1str, isHero: true),
+          const Text('is opposite'),
+          TutorialCircle(color2, text: color2str, isHero: true),
         ],
-      );
-  Widget heroCircle(Color color) => Hero(
-        tag: color,
-        child: circle(color),
-      );
-
-  Widget circle(Color color) => DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(circleSize),
-          color: color,
-        ),
-        child: const SizedBox(
-          width: circleSize,
-          height: circleSize,
-        ),
       );
 }
