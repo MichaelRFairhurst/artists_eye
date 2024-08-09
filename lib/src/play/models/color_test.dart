@@ -1,3 +1,4 @@
+import 'package:artists_eye/src/color/models/primary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 
@@ -37,12 +38,12 @@ class ColorOption {
 }
 
 const primary6 = <ColorOption>[
-  ColorOption(color: Color(0xFFFF0000), colorName: 'red'),
-  ColorOption(color: Color(0xFFFF00FF), colorName: 'magenta'),
-  ColorOption(color: Color(0xFF0000FF), colorName: 'blue'),
-  ColorOption(color: Color(0xFF00FFFF), colorName: 'cyan'),
-  ColorOption(color: Color(0xFF00FF00), colorName: 'green'),
-  ColorOption(color: Color(0xFFFFFF00), colorName: 'yellow'),
+  ColorOption(color: softRed, colorName: 'red'),
+  ColorOption(color: softMagenta, colorName: 'magenta'),
+  ColorOption(color: softBlue, colorName: 'blue'),
+  ColorOption(color: softCyan, colorName: 'cyan'),
+  ColorOption(color: softGreen, colorName: 'green'),
+  ColorOption(color: softYellow, colorName: 'yellow'),
 ];
 
 class MultiSelectColorTest extends ColorTest {

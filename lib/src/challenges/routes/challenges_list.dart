@@ -4,6 +4,7 @@ import 'package:artists_eye/src/challenges/widgets/challenge_tile.dart';
 import 'package:artists_eye/src/color/models/color_effect.dart';
 import 'package:artists_eye/src/scaffold/widgets/artists_eye_scaffold.dart';
 import 'package:artists_eye/src/scaffold/widgets/thumb_widget.dart';
+import 'package:artists_eye/src/tutorial/widgets/complimentary_tutorial.dart';
 import 'package:flutter/material.dart';
 
 class ChallengesList extends StatelessWidget {
@@ -53,6 +54,7 @@ class ChallengesList extends StatelessWidget {
               prompt: 'Select the complimentary color:',
 			  thumbtext: 'match me!',
               makeColorTest: Challenge.matchColorComplimentIntro,
+			  tutorialBuilder: () => ComplimentaryTutorial(),
             ),
             Challenge(
               difficulty: easy,

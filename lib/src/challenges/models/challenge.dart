@@ -6,7 +6,7 @@ import 'package:artists_eye/src/color/models/color_effect.dart';
 import 'package:artists_eye/src/color/models/match_type.dart';
 import 'package:artists_eye/src/play/models/color_test.dart';
 import 'package:artists_eye/src/play/models/score.dart';
-import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 
 class Challenge {
   Challenge({
@@ -14,10 +14,11 @@ class Challenge {
     required this.id,
     required this.difficulty,
     required this.makeColorTest,
-	required this.prompt,
-	required this.thumbtext,
+    required this.prompt,
+    required this.thumbtext,
     this.isWheel = false,
     this.selectedColorEffect = ColorEffect.none,
+    this.tutorialBuilder,
   }) : recordHistory = RecordHistory(
           mistakesAllowed: difficulty.allowedMistakes,
         );
@@ -29,6 +30,7 @@ class Challenge {
   final bool isWheel;
   final Difficulty difficulty;
   final RecordHistory recordHistory;
+  final Widget Function()? tutorialBuilder;
   final ColorTest Function() makeColorTest;
 
   final ColorEffect selectedColorEffect;
@@ -61,7 +63,7 @@ class Challenge {
       colorLeft: hsv.withValue(0).toColor(),
       colorRight: hsv.withValue(1).toColor(),
       toFind: rgb,
-	  hintColor: rgb,
+      hintColor: rgb,
     );
   }
 
@@ -80,7 +82,7 @@ class Challenge {
       colorLeft: hsv.withSaturation(0).toColor(),
       colorRight: hsv.withSaturation(1).toColor(),
       toFind: rgb,
-	  hintColor: rgb,
+      hintColor: rgb,
     );
   }
 
@@ -101,52 +103,46 @@ class Challenge {
       colorRight:
           hsv.withHue((hsv.hue - random.nextDouble() * 60) % 360).toColor(),
       toFind: rgb,
-	  hintColor: rgb,
+      hintColor: rgb,
     );
   }
 
   static ColorTest matchColorComplimentIntro() {
-	final random = Random();
-	const count = 3;
-	final index = random.nextInt(primary6.length);
-	final offset = -random.nextInt(count - 1);
-
-	const desaturate = AddHSL(
-	  deltaSaturation: -0.7,
-	  deltaLightness: 0.05,
-	);
+    final random = Random();
+    const count = 3;
+    final index = random.nextInt(primary6.length);
+    final offset = -random.nextInt(count - 1);
 
     return MultiSelectColorTest(
-	  toFind: desaturate.perform(primary6[index].color),
-	  hintColor: desaturate.perform(primary6[(index + 3) % 6].color),
-	  options: [
-	    for (var i = 0; i < count; ++i)
-		  ColorOption(
-		    color: desaturate.perform(primary6[(i + index + offset) % 6].color),
-			colorName: primary6[(i + index + offset) % 6].colorName,
-		  ),
-	  ]
-	);
+        toFind: primary6[index].color,
+        hintColor: primary6[(index + 3) % 6].color,
+        options: [
+          for (var i = 0; i < count; ++i)
+            ColorOption(
+              color: primary6[(i + index + offset) % 6].color,
+              colorName: primary6[(i + index + offset) % 6].colorName,
+            ),
+        ]);
   }
 
   static ColorTest matchColorComplimentEasy() {
-	final matchColorTest = matchColor();
-	const addHue = AddHSL(
-	  deltaHue: 180,
-	);
-	return matchColorTest.copyWith(
-	  colorLeft: addHue.perform(matchColorTest.colorLeft),
-	  colorRight: addHue.perform(matchColorTest.colorRight),
-	);
+    final matchColorTest = matchColor();
+    const addHue = AddHSL(
+      deltaHue: 180,
+    );
+    return matchColorTest.copyWith(
+      colorLeft: addHue.perform(matchColorTest.colorLeft),
+      colorRight: addHue.perform(matchColorTest.colorRight),
+    );
   }
 
   static GradientColorTest matchColorComplimentHard() {
-	final matchColorTest = matchColor();
-	const addHue = AddHSL(
-	  deltaHue: 180,
-	);
-	return matchColorTest.copyWith(
-	  hintColor: addHue.perform(matchColorTest.hintColor),
-	);
+    final matchColorTest = matchColor();
+    const addHue = AddHSL(
+      deltaHue: 180,
+    );
+    return matchColorTest.copyWith(
+      hintColor: addHue.perform(matchColorTest.hintColor),
+    );
   }
 }

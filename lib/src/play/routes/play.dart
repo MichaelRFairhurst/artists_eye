@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:artists_eye/src/challenges/models/challenge.dart';
+import 'package:artists_eye/src/color/models/color_effect.dart';
 import 'package:artists_eye/src/color/models/color_match.dart';
 import 'package:artists_eye/src/color/widgets/color_wheel.dart';
 import 'package:artists_eye/src/play/models/color_test.dart';
@@ -50,6 +51,18 @@ class _PlayState extends State<Play> {
     super.initState();
     score.start();
 
+    if (widget.challenge.tutorialBuilder != null) {
+      // TODO: fix this...
+      Future.delayed(const Duration(seconds: 1)).then((_) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            insetPadding: const EdgeInsets.all(16.0),
+            content: widget.challenge.tutorialBuilder!(),
+          ),
+        );
+      });
+    }
     colorTest = widget.startingColorTest ?? widget.challenge.makeColorTest();
   }
 
@@ -75,16 +88,32 @@ class _PlayState extends State<Play> {
 
   Widget primaryAreaGradient() {
     final colorTest = this.colorTest;
+    final Color colorLeft;
+    final Color colorRight;
+
+    if (colorTest is GradientColorTest) {
+      if (widget.challenge.isWheel) {
+        const softener = AddHSL(
+          deltaSaturation: -0.5,
+          deltaLightness: 0.2,
+        );
+
+        colorLeft = softener.perform(colorTest.colorLeft);
+        colorRight = softener.perform(colorTest.colorLeft);
+      } else {
+        colorLeft = colorTest.colorLeft;
+        colorRight = colorTest.colorLeft;
+      }
+    } else {
+      colorLeft = Colors.grey[200]!;
+      colorRight = Colors.grey[100]!;
+    }
 
     return Positioned.fill(
       child: PrimaryAreaGradient(
         heroTag: 'gradient${widget.challenge.id}',
-        colorLeft: colorTest is GradientColorTest
-            ? colorTest.colorLeft
-            : Colors.grey[200]!,
-        colorRight: colorTest is GradientColorTest
-            ? colorTest.colorRight
-            : Colors.grey[100]!,
+        colorLeft: colorLeft,
+        colorRight: colorRight,
       ),
     );
   }
@@ -137,7 +166,7 @@ class _PlayState extends State<Play> {
         child: FadeIn(
           child: PickWithVocab(
             options: colorTest.options,
-			onSelect: colorSelected,
+            onSelect: colorSelected,
           ),
         ),
       );
