@@ -98,11 +98,11 @@ class _PlayState extends State<Play> {
           deltaLightness: 0.2,
         );
 
-        colorLeft = softener.perform(colorTest.colorLeft);
+        colorLeft = softener.perform(colorTest.colorRight);
         colorRight = softener.perform(colorTest.colorLeft);
       } else {
         colorLeft = colorTest.colorLeft;
-        colorRight = colorTest.colorLeft;
+        colorRight = colorTest.colorRight;
       }
     } else {
       colorLeft = Colors.grey[200]!;
